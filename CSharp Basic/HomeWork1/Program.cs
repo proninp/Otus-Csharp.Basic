@@ -29,8 +29,7 @@ namespace HomeWork1
             
             #region Пункт 3
             int rowWidth = 2 * n + text.Length;
-            int rowHight = (n < 2) ? 3 : n / 2 + n;
-            rowHight -= (rowHight % 2 == 0) ? 1 : 0;
+            int rowHight = 2 * n - 1;
             PrintBorder(rowWidth);
             PrintFirstRow(rowWidth, rowHight, n, text);
             PrintBorder(rowWidth);
