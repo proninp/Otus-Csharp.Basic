@@ -4,39 +4,31 @@ namespace HomeWork1
 {
     internal class Program
     {
-        const string INPUT_TABLE_RANGE = "Введите размерность таблицы:";
-        const string INPUT_SIMPLE_TEXT = "Введите производбный текст:";
-        const string INCORRECT_NUMBER_FORMAT = "Вы ввели не число - Попробуйте еще раз";
-        const string INCORRECT_NUMBER_VALUE = "Введеное число не должно быть меньше 1 и больше 6 - Попробуйте еще раз";
-        const string TOO_LONG_TEXT = "Слишком длинный текст";
-        const char MATRIX_RANGE_SYMBOL = '+';
-        const char MATRIX_SEPARATOR_SYMBOL = ' ';
+        const string InputTableRange = "Введите размерность таблицы:";
+        const string InputSimpleText = "Введите производбный текст:";
+        const string IncorrectNumberFormat = "Вы ввели не число - Попробуйте еще раз";
+        const string IncorrectNumbrtValue = "Введеное число не должно быть меньше 1 и больше 6 - Попробуйте еще раз";
+        const string TooLongText = "Слишком длинный текст";
+        const char MatrixRangeSymbol = '+';
+        const char MatrixSeparatorSymbol = ' ';
 
-        const int NUMBER_LOWER_LIMIT = 1;
-        const int NUMBER_UPPER_LIMIT = 6;
-        const int MATRIX_MAX_WIDTH = 40;
+        const int NumberLowerLimit = 1;
+        const int NumberUpperLimit = 6;
+        const int MatrixMaxWidth = 40;
 
         static void Main(string[] args)
         {
             #region Пункт 1
-            int n = GetSimpleNumber();
+            var n = GetSimpleNumber();
             #endregion
 
             #region Пункт 2
-            string text = GetSimpleString(n);
+            var text = GetSimpleString(n);
             Console.WriteLine();
             #endregion
-            
+
             #region Пункт 3
-            int rowWidth = 2 * n + text.Length;
-            int rowHight = 2 * n - 1;
-            PrintBorder(rowWidth);
-            PrintFirstRow(rowWidth, rowHight, n, text);
-            PrintBorder(rowWidth);
-            PrintSecondRow(rowWidth, rowHight);
-            PrintBorder(rowWidth);
-            PrintThirdRow(rowWidth, rowWidth - 2); // -2 - т.к. 2 символа - это левая и правая границы ячейки
-            PrintBorder(rowWidth);
+            PrintTable(n, text);
             #endregion
         }
         #region Функции для получения значений из консоли
@@ -49,15 +41,15 @@ namespace HomeWork1
             int n = 0;
             do
             {
-                PrintConsole(INPUT_TABLE_RANGE);
+                PrintConsole(InputTableRange);
                 if (int.TryParse(Console.ReadLine(), out int x))
                 {
-                    n = (x < NUMBER_LOWER_LIMIT || x > NUMBER_UPPER_LIMIT) ? 0 : x;
+                    n = (x < NumberLowerLimit || x > NumberUpperLimit) ? 0 : x;
                     if (n == 0)
-                        PrintConsoleErr(INCORRECT_NUMBER_VALUE);
+                        PrintConsoleErr(IncorrectNumbrtValue);
                 }
                 else
-                    PrintConsoleErr(INCORRECT_NUMBER_FORMAT);
+                    PrintConsoleErr(IncorrectNumberFormat);
             }
             while (n == 0);
             return n;
@@ -69,18 +61,18 @@ namespace HomeWork1
         /// <returns>Текст определенной длинны</returns>
         static string GetSimpleString(int range)
         {
-            string? inputText;
+            string inputText;
             bool isLoop;
-            int maxStrLen = (MATRIX_MAX_WIDTH - 2 * range); // 1 + (n - 1) + str.Len + (n - 1) + 1
+            int maxStrLen = (MatrixMaxWidth - 2 * range); // 1 + (n - 1) + str.Len + (n - 1) + 1
             do
             {
-                PrintConsole(INPUT_SIMPLE_TEXT);
+                PrintConsole(InputSimpleText);
                 inputText = Console.ReadLine();
                 isLoop = string.IsNullOrEmpty(inputText);
                 if (!isLoop && inputText?.Length > maxStrLen) // run this check if only not isLoop
                 {
                     isLoop = true;
-                    PrintConsoleErr(TOO_LONG_TEXT);
+                    PrintConsoleErr(TooLongText);
                 }
             }
             while (isLoop);
@@ -89,15 +81,58 @@ namespace HomeWork1
         #endregion
         #region Функции для печати таблицы
         /// <summary>
+        /// Печать таблицы
+        /// </summary>
+        /// <param name="n">Введенное число n</param>
+        /// <param name="text">Введенный текст</param>
+        static void PrintTable(int n, string text)
+        {
+            int rowWidth = 2 * n + text.Length;
+            int rowHight = 2 * n - 1;
+            string tableBorder = GetBorderText(rowWidth);
+            PrintBorder(tableBorder);
+            foreach (TableRow row in (TableRow[])Enum.GetValues(typeof(TableRow)))
+            {
+                switch (row)
+                {
+                    case TableRow.First:
+                        {
+                            PrintFirstRow(rowWidth, rowHight, n, text);
+                            PrintBorder(tableBorder);
+                            break;
+                        }
+                    case TableRow.Second:
+                        {
+                            PrintSecondRow(rowWidth, rowHight);
+                            PrintBorder(tableBorder);
+                            break;
+                        }
+                    case TableRow.Last:
+                        {
+                            PrintThirdRow(rowWidth, rowWidth - 2); // -2 - т.к. 2 символа - это левая и правая границы ячейки
+                            PrintBorder(tableBorder);
+                            break;
+                        }
+                }
+            }
+        }
+        /// <summary>
         /// Печать междустрочного разделителя
         /// </summary>
         /// <param name="w">Ширина строки</param>
-        static void PrintBorder(int w)
+        static string GetBorderText(int w)
         {
-            while(w-- > 0)
-                Console.Write(MATRIX_RANGE_SYMBOL);
-            Console.WriteLine();
+            /* "1 балл - если горизонтальная граница таблицы, будет собрана один раз, а выводится будет одной строкой" */
+            StringBuilder border = new StringBuilder(w);
+            for (int i = 0; i < w; i++)
+                border.Append(MatrixRangeSymbol);
+            return border.ToString();
         }
+        /// <summary>
+        /// Печать горизонтальной границы таблицы
+        /// </summary>
+        /// <param name="border">Текст границы таблицы</param>
+        static void PrintBorder(string border) => Console.WriteLine(border);
         /// <summary>
         /// Печать первой строки
         /// </summary>
@@ -107,21 +142,27 @@ namespace HomeWork1
         /// <param name="text">Текстовое выражение</param>
         static void PrintFirstRow(int w, int h, int n, string text)
         {
-            int hMid = h/2; // Выносим выше, чтобы сэкономить на вычислениях внутри цикла
+            int centerRow = h / 2; // Выносим выше, чтобы сэкономить на вычислениях внутри цикла
             bool isMidleHeight;
+            string emptyRow = new StringBuilder(w)
+                .Append(MatrixRangeSymbol)
+                .Append(new string(MatrixSeparatorSymbol, w - 2))
+                .Append(MatrixRangeSymbol)
+                .ToString();
+            string rowWithText = new StringBuilder(w)
+                .Append(MatrixRangeSymbol)
+                .Append(new string(MatrixSeparatorSymbol, (w - 2 - text.Length) / 2))
+                .Append(text)
+                .Append(new string(MatrixSeparatorSymbol, (w - 2 - text.Length) / 2))
+                .Append(MatrixRangeSymbol)
+                .ToString();
             for (int i = 0; i < h; i++)
             {
-                isMidleHeight = i == hMid;
-                for (int j = 0; j < w; j++)
-                {
-                    if ((j == 0) || (j == w - 1)) // Позиция = граница ?
-                        Console.Write(MATRIX_RANGE_SYMBOL);
-                    else if ((isMidleHeight) && j >= n && j < n + text.Length) // Позиция начала и конца печати текстового выражения
-                        Console.Write(text[j - n]);
-                    else
-                        Console.Write(MATRIX_SEPARATOR_SYMBOL);
-                }
-                Console.WriteLine();
+                isMidleHeight = i == centerRow;
+                if (!isMidleHeight)
+                    Console.WriteLine(emptyRow);
+                else
+                    Console.WriteLine(rowWithText);
             }
         }
         /// <summary>
@@ -131,16 +172,14 @@ namespace HomeWork1
         /// <param name="h">Высота строки</param>
         static void PrintSecondRow(int w, int h)
         {
+            string evenRowText = GetSecondRowText(w, true);
+            string oddRowText = GetSecondRowText(w, false);
             for (int i = 0; i < h; i++)
             {
-                for (int j = 0; j < w; j++)
-                {
-                    if ((j == 0 || j == w - 1) || ((i + j) % 2 == 0))
-                        Console.Write(MATRIX_RANGE_SYMBOL);
-                    else
-                        Console.Write(MATRIX_SEPARATOR_SYMBOL);
-                }
-                Console.WriteLine();
+                if (i % 2 == 0)
+                    Console.WriteLine(evenRowText);
+                else
+                    Console.WriteLine(oddRowText);
             }
         }
         /// <summary>
@@ -150,6 +189,7 @@ namespace HomeWork1
         /// <param name="h">Высота строки</param>
         static void PrintThirdRow(int w, int h)
         {
+            StringBuilder sb = new StringBuilder(w);
             for (int i = 0; i < h; i++)
             {
                 for (int j = 0; j < w; j++)
@@ -158,14 +198,35 @@ namespace HomeWork1
                     bool isMainDiagonal = j - 1 == i; // Диагональ слева направо
                     bool isSecondaryDiagonal = j - w + 2 + i == 0; // Диагональ справа налево
                     if (isBorder || isMainDiagonal || isSecondaryDiagonal)
-                        Console.Write(MATRIX_RANGE_SYMBOL);
+                        sb.Append(MatrixRangeSymbol);
                     else
-                        Console.Write(MATRIX_SEPARATOR_SYMBOL);
+                        sb.Append(MatrixSeparatorSymbol);
                 }
-                Console.WriteLine();
+                Console.WriteLine(sb.ToString());
+                sb.Clear();
             }
         }
-
+        /// <summary>
+        /// Получение текста каждой подстроки второй строки
+        /// </summary>
+        /// <param name="rowWidth">Ширина строки</param>
+        /// <param name="rowNumber">Номер текущей подстроки</param>
+        /// <returns>Подстрока</returns>
+        static string GetSecondRowText(int rowWidth, bool isEven)
+        {
+            int shift = (isEven) ? 0 : 1;
+            StringBuilder ans = new StringBuilder(rowWidth);
+            ans.Append(MatrixRangeSymbol);
+            for (int i = 1; i < rowWidth - 1; i++)
+            {
+                if ((i + shift) % 2 == 0)
+                    ans.Append(MatrixRangeSymbol);
+                else
+                    ans.Append(MatrixSeparatorSymbol);
+            }
+            ans.Append(MatrixRangeSymbol);
+            return ans.ToString();
+        }
         #endregion
         #region Вспомогательные функции для цветной печати в консоли
         /// <summary>
@@ -191,5 +252,11 @@ namespace HomeWork1
             Console.ForegroundColor = currentColor;
         }
         #endregion
+    }
+    enum TableRow
+    {
+        First,
+        Second,
+        Last
     }
 }
