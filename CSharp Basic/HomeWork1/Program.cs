@@ -2,7 +2,7 @@
 
 namespace HomeWork1
 {
-    internal class Program
+    public class Program
     {
         const string InputTableRange = "Введите размерность таблицы:";
         const string InputSimpleText = "Введите производбный текст:";
@@ -233,18 +233,18 @@ namespace HomeWork1
         /// Печать в консоль текста для указания действия
         /// </summary>
         /// <param name="text">Текст, который будет выведен на консоль</param>
-        static void PrintConsole(string text) => PrintConsole(text, ConsoleColor.Magenta);
+        public static void PrintConsole(string text) => PrintConsole(text, ConsoleColor.Magenta);
         /// <summary>
         /// Печать в консоль текста для обозначения ошибки ввода
         /// </summary>
         /// <param name="text">Текст, который будет выведен на консоль</param>
-        static void PrintConsoleErr(string text) => PrintConsole(text, ConsoleColor.Red);
+        public static void PrintConsoleErr(string text) => PrintConsole(text, ConsoleColor.Red);
         /// <summary>
         /// Печать в консоль произвольного текста
         /// </summary>
         /// <param name="text">Текст, который будет выведен на консоль</param>
         /// <param name="color">Цвет, которым в консоли будет напечатано сообщение</param>
-        static void PrintConsole(string text, ConsoleColor color)
+        public static void PrintConsole(string text, ConsoleColor color)
         {
             var currentColor = Console.ForegroundColor;
             Console.ForegroundColor = color;
