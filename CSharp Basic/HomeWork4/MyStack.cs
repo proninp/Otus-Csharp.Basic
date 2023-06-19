@@ -3,19 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Transactions;
 
 namespace HomeWork4
 {
     public class MyStack
     {
         readonly string EmptyStackExceptionText = "Стэк пустой";
-        StackItem? CurrentItem { get; set; }
-        public string? Top
-        {
-            get { return CurrentItem?.ItemValue; }
-        }
+        private StackItem? _currentItem { get; set; }
+        public string? Top => _currentItem?.ItemValue;
         public int Size { get; set; }
 
         /// <summary>
@@ -52,9 +47,9 @@ namespace HomeWork4
         /// Возвращает массив строк в обратном плрядке - верхний элемент стэка будет последним в массиве
         /// </summary>
         /// <returns>Массив строк</returns>
-        public string[] GetPostOrderArray()
+        protected internal string[] GetPostOrderArray()
         {
-            var root = CurrentItem;
+            var root = _currentItem;
             var array = new string[Size];
             int i = Size - 1;
             while(root != null)
@@ -68,9 +63,9 @@ namespace HomeWork4
         /// Возвращает массив строк в прямом плрядке - верхний элемент стэка будет первым в массиве
         /// </summary>
         /// <returns>Массив строк</returns>
-        public string[] GetInOrderArray()
+        protected internal string[] GetInOrderArray()
         {
-            var root = CurrentItem;
+            var root = _currentItem;
             var array = new string[Size];
             int i = 0;
             while(root != null)
@@ -93,13 +88,13 @@ namespace HomeWork4
         /// Добавить элемент в стек
         /// </summary>
         /// <param name="item">Строка для добавления в стэк</param>
-        public void Add(string item)
+        public void Add(string? item)
         {
             if (item == null)
                 return;
-            var prev = CurrentItem;
-            CurrentItem = new StackItem(item);
-            CurrentItem.PreviousItem = prev;
+            var prev = _currentItem;
+            _currentItem = new StackItem(item);
+            _currentItem.PreviousItem = prev;
             Size++;
         }
         /// <summary>
@@ -109,10 +104,10 @@ namespace HomeWork4
         /// <exception cref="EmptyStackException">При попытке вызова метода Pop у пустого стека - выбрасывается исключение с сообщением "Стек пустой"</exception>
         public string Pop()
         {
-            if (Size == 0 || CurrentItem == null)
+            if (Size == 0 || _currentItem == null)
                 throw new EmptyStackException(EmptyStackExceptionText);
-            string item = CurrentItem.ItemValue;
-            CurrentItem = CurrentItem.PreviousItem;
+            string item = _currentItem.ItemValue;
+            _currentItem = _currentItem.PreviousItem;
             Size--;
             return item;
         }
@@ -121,17 +116,15 @@ namespace HomeWork4
         /// </summary>
         public void PrintStackInOrder()
         {
-            if (CurrentItem == null)
+            if (_currentItem == null)
             {
                 Console.WriteLine(EmptyStackExceptionText);
                 return;
             }
-            var root = CurrentItem;
+            var root = _currentItem;
             root.InOrderTraversalPrint();
             Console.WriteLine();
         }
-        
-
         private class StackItem
         {
             public string? ItemValue { get; set; }
@@ -157,5 +150,4 @@ namespace HomeWork4
             }
         }
     }
-
 }

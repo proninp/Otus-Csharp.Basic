@@ -39,7 +39,7 @@ namespace HomeWork4
             {
                 s.Pop();
             }
-            catch(Exception e)
+            catch(EmptyStackException e)
             {
                 Console.WriteLine($"s.Pop() - Exception: {e.Message}");
                 
