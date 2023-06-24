@@ -9,23 +9,23 @@ namespace HomeWork5
         {
             var quadcopter = new Quadcopter();
 
-            HomeWork1.Program.PrintConsole("********** Quadcopter **********");
+            HomeWork01.Library.HomeWorkHelper.PrintConsole("********** Quadcopter **********");
             quadcopter.Charge();
             Console.WriteLine(string.Join(", ", ((List<string>)quadcopter.GetComponents()).ToArray()));
             Console.WriteLine();
 
-            HomeWork1.Program.PrintConsole("********** IChargeable **********");
+            HomeWork01.Library.HomeWorkHelper.PrintConsole("********** IChargeable **********");
             ((IChargeable)quadcopter).Charge();
             Console.WriteLine(((IChargeable)quadcopter).GetInfo());
             Console.WriteLine();
 
-            HomeWork1.Program.PrintConsole("********** IRobot **********");
+            HomeWork01.Library.HomeWorkHelper.PrintConsole("********** IRobot **********");
             Console.WriteLine(((IRobot)quadcopter).GetRobotType());
             Console.WriteLine(string.Join(", ", ((List<string>)((IRobot)quadcopter).GetComponents()).ToArray()));
             Console.WriteLine(((IRobot)quadcopter).GetInfo());
             Console.WriteLine();
 
-            HomeWork1.Program.PrintConsole("********** IFlyingRobot **********");
+            HomeWork01.Library.HomeWorkHelper.PrintConsole("********** IFlyingRobot **********");
             Console.WriteLine(((IFlyingRobot)quadcopter).GetRobotType());
             Console.WriteLine(string.Join(", ", ((List<string>)((IFlyingRobot)quadcopter).GetComponents()).ToArray()));
             Console.WriteLine(((IFlyingRobot)quadcopter).GetInfo());

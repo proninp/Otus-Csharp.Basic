@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace HomeWork1
+namespace HomeWork01
 {
     public class Program
     {

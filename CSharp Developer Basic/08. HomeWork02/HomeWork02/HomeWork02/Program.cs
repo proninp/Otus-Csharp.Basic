@@ -1,9 +1,7 @@
 ﻿using System.Collections;
-using System.Data.SqlTypes;
 using System.Diagnostics;
-using System.Numerics;
 
-namespace HomeWork2
+namespace HomeWork02
 {
     internal class Program
     {
@@ -56,7 +54,7 @@ namespace HomeWork2
             #region Вычисление времени заполнения для связанных списков
             LinkedListAddDelegate linkedListFunc = AddLinkedListElementsFirst;
             addFirstLinkedListTimeText = GetFuncExecutionTime(linkedListFunc, addLastLinkedList, size, timer, timeSpanFormat);
-            
+
             linkedListFunc = AddLinkedListElementsLast;
             addLastLinkedListTimeText = GetFuncExecutionTime(linkedListFunc, addLastLinkedList, size, timer, timeSpanFormat);
             #endregion
@@ -156,7 +154,7 @@ namespace HomeWork2
         /// </summary>
         /// <param name="list">Список</param>
         /// <param name="id">Номер элементы начиная с 0</param>
-        static void GetListElement(IList<int> list, int id) 
+        static void GetListElement(IList<int> list, int id)
         {
             int elem = -1;
             for (int i = 0; i < list.Count; i++)
@@ -180,7 +178,7 @@ namespace HomeWork2
             {
                 if (i == id)
                 {
-                    elem = (int) (list[i] ?? 0);
+                    elem = (int)(list[i] ?? 0);
                     break;
                 }
             }
@@ -199,7 +197,7 @@ namespace HomeWork2
         static void PrintListSpecialElemets(IList<int> list, int div)
         {
             Console.WriteLine($"Элементы List'a, нацело делящиеся на {div}:");
-            foreach(var v in list)
+            foreach (var v in list)
                 if (v % div == 0)
                     Console.Write($"[{v}] ");
             Console.WriteLine("\n");
@@ -228,7 +226,7 @@ namespace HomeWork2
         static void PrintLinkedListSpecialElemets(LinkedList<int> list, int div)
         {
             Console.WriteLine($"Элементы LinkedList'a, нацело делящиеся на {div}:");
-            foreach(var v in list)
+            foreach (var v in list)
                 if (v % div == 0)
                     Console.Write($"[{v}] ");
             Console.WriteLine("\n");
