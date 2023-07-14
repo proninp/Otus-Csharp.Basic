@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="HomeWork01.Library">
+      <HintPath>..\..\..\05. HomeWork01\HomeWork01.Library\HomeWork01.Library\bin\Debug\net7.0\HomeWork01.Library.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
