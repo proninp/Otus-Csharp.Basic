@@ -41,7 +41,7 @@ namespace HomeWork08
             {
                 if (node.Data == value)
                     return node;
-                else if (node.Data >= value)
+                if (node.Data >= value)
                     node = node.Left;
                 else
                     node = node.Right;
@@ -52,35 +52,28 @@ namespace HomeWork08
         {
             if (Data == value)
                 return this;
-            else if (Data >= value && Left != null)
+            if (Data >= value && Left != null)
                 return Left.FindRecoursive(value);
-            else if (Data < value && Right != null)
+            if (Data < value && Right != null)
                 return Right.FindRecoursive(value);
-            else
-                return null;
+            return null;
         }
         public void InOrderTraversal()
         {
-            if (Left != null)
-                Left.InOrderTraversal();
+            Left?.InOrderTraversal();
             Console.WriteLine(Data);
-            if (Right != null)
-                Right.InOrderTraversal();
+            Right?.InOrderTraversal();
         }
         public void PreOrderTraversal()
         {
             Console.WriteLine(Data);
-            if (Left != null)
-                Left.InOrderTraversal();
-            if (Right != null)
-                Right.InOrderTraversal();
+            Left?.InOrderTraversal();
+            Right?.InOrderTraversal();
         }
         public void PostOrderTraversal()
         {
-            if (Left != null)
-                Left.InOrderTraversal();
-            if (Right != null)
-                Right.InOrderTraversal();
+            Left?.InOrderTraversal();
+            Right?.InOrderTraversal();
             Console.WriteLine(Data);
         }
 

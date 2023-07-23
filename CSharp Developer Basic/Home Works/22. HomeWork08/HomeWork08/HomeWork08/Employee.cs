@@ -7,7 +7,7 @@
         public int Salary { get; set; }
         public Employee(string name, string? salaryStr)
         {
-            if (string.IsNullOrEmpty(salaryStr) || (!int.TryParse(salaryStr, out int salary)))
+            if (string.IsNullOrEmpty(salaryStr) || !int.TryParse(salaryStr, out int salary))
                 throw new ArgumentException(IncorrectSalaryFormat);
             Name = name;
             Salary = salary;
@@ -26,11 +26,8 @@
         public static bool operator !=(Employee left, int value) => left.Salary != value;
         public override bool Equals(object? obj)
         {
-            if (obj == null)
+            if (obj is not Employee employee)
                 return false;
-            if (!(obj is Employee))
-                return false;
-            var employee = (Employee)obj;
             return employee.Name == Name && employee.Salary == Salary;
         }
         public override int GetHashCode() => Name.GetHashCode() ^ Salary.GetHashCode();
@@ -44,7 +41,7 @@
             else if (Salary > employee.Salary)
                 return 1;
             else
-                return string.Compare(Name, employee.Name);
+                return string.Compare(Name, employee.Name, StringComparison.InvariantCulture);
         }        
     }
 }
