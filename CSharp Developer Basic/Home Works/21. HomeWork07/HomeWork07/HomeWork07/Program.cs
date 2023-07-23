@@ -17,20 +17,18 @@ namespace HomeWork07
         }
         #region Print Resultes
         static void DoFibTests(int n)
-        {
+        {   
             HomeWork01.Library.HomeWorkHelper.PrintConsole(string.Format(ResultTemplate, n));
 
-            var map = new Dictionary<int, long>();
             var watch = new Stopwatch();
             
             watch.Start();
             var num = GetFibRecoursive(n);
             watch.Stop();
             PrintFunctionResult(RecoursiveType.PadRight(RecoursiveCachedType.Length), num, watch);
-            
 
             watch.Restart();
-            num = GetFibRecoursiveCached(n, map);
+            num = GetFibRecoursiveCached(n);
             watch.Stop();
             PrintFunctionResult(RecoursiveCachedType, num, watch);
 
@@ -47,16 +45,21 @@ namespace HomeWork07
         #region Fibonacci Calcualations
         static long GetFibRecoursive(int n)
         {
-            if (n == 0 || n == 1)
+            if (n < 2)
                 return n;
             return GetFibRecoursive(n - 1) + GetFibRecoursive(n - 2);
+        }
+        static long GetFibRecoursiveCached(int n)
+        {
+            var map = new Dictionary<int, long>();
+            return GetFibRecoursiveCached(n, map);
         }
         static long GetFibRecoursiveCached(int n, Dictionary<int, long> map)
         {
             if (map.ContainsKey(n))
                 return map[n];
             long fib;
-            if (n == 0 || n == 1)
+            if (n < 2)
                 fib = n;
             else
                 fib = GetFibRecoursiveCached(n - 1, map) + GetFibRecoursiveCached(n - 2, map);
@@ -65,12 +68,12 @@ namespace HomeWork07
         }
         static long GetFibIterative(int n)
         {
-            var a = new long[n + 1];
-            a[0] = 0;
-            a[1] = 1;
+            if (n < 2)
+                return n;
+            var a = new long[] { 0, 1 };
             for (int i = 2; i <= n; i++)
-                a[i] = a[i - 1] + a[i - 2];
-            return a[n];
+                (a[0], a[1]) = (a[1], a[0] + a[1]);
+            return a[1];
         }
         #endregion
     }
