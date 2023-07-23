@@ -107,4 +107,4 @@ message
 Для зачета нужно набрать 6 баллов
 
 ## Пример работы
-![](![](https://github.com/proninp/Otus-Edu/blob/main/CSharp%20Developer%20Basic/Home%20Works/09.%20HomeWork03/resources/HomeWork03%20Demo.gif))
+![](https://github.com/proninp/Otus-Edu/blob/main/CSharp%20Developer%20Basic/Home%20Works/09.%20HomeWork03/resources/HomeWork03%20Demo.gif)
