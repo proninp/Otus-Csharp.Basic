@@ -44,12 +44,12 @@ namespace HomeWork03
                 if (c.Equals(Settings.MinusSign))
                 {
                     sign = Settings.MinusSign;
-                    factor = factor.Substring(1);
+                    factor = factor[1..];
                 }
                 else
                 {
                     if (c.Equals(Settings.PlusSign))
-                        factor = factor.Substring(1);
+                        factor = factor[1..];
                 }
             }
             part.Append(sign);
@@ -86,13 +86,13 @@ namespace HomeWork03
             var d = b * b - 4 * a * c; // D = b^2 - 4 * a * c
             if (d > 0)
             {
-                _x1 = (-b + Math.Sqrt(d)) / 2 / a;
-                _x2 = (-b - Math.Sqrt(d)) / 2 / a;
+                _x1 = (-b + Math.Sqrt(d)) / 2.0 / a;
+                _x2 = (-b - Math.Sqrt(d)) / 2.0 / a;
                 result = $"x1 = {_x1}; x2 = {_x2}";
             }
             else if (d == 0)
             {
-                _x1 = (-b) / 2 / a;
+                _x1 = (-b) / 2.0 / a;
                 result = $"x = {_x1}";
             }
             else
