@@ -55,4 +55,4 @@ q
 bigimage.jpg загружен
 A
 ```
-![](https://github.com/proninp/Otus-Edu/blob/main/CSharp%20Developer%20Basic/Home%20Works/30.%20HomeWork09/resources/HomeWork09%20Demo.png)
+![](https://github.com/proninp/Otus-Edu/blob/main/CSharp%20Developer%20Basic/Home%20Works/30.%20HomeWork09/HomeWork09/resources/HomeWork09%20Demo.png?raw=true)
