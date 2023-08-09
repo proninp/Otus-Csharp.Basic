@@ -1,25 +1,34 @@
-﻿using System.Net;
+﻿using System;
+using System.ComponentModel;
+using System.Net;
 
 namespace HomeWork09
 {
     public class ImageDownloader
     {
-        public event Action? ImageStarted;
-        public event Action? ImageCompleted;
-
-
-        public async Task DownloadAsync(string url, string fileName)
+        public event Action<string>? ImageStarted;
+        public event Action<string>? ImageCompleted;
+        private List<(Task task, string url, string filename)> downloadingInfoList;
+        public ImageDownloader()
         {
-            var webClient = new WebClient();
-            ImageStarted?.Invoke();
-            Helper.PrintLog($"Качаю \"{fileName}\" из \"{url}\" .......\n\n");
+            downloadingInfoList = new List<(Task task, string url, string filename)>();
+        }
+
+        public void StartDownload(Dictionary<string, string> ioResources)
+        {
+            foreach (var resource in ioResources)
+                downloadingInfoList.Add((DownloadAsync(resource.Key, resource.Value), resource.Key, resource.Value));
+        }
+        public async Task DownloadAsync(string url, string filename)
+        {
+            var client = new WebClient();
             try
             {
-                await webClient.DownloadFileTaskAsync(url, fileName);
-
-                ImageCompleted?.Invoke();
-                Helper.PrintLog($"Успешно скачал \"{fileName}\" из \"{url}\"");
-
+                ImageStarted?.Invoke(filename);
+                Helper.PrintLog($"Качаю \"{filename}\" из \"{url}\" .......\n\n");
+                await client.DownloadFileTaskAsync(url, filename);
+                ImageCompleted?.Invoke(filename);
+                Helper.PrintLog($"Успешно скачал \"{filename}\" из \"{url}\"");
             }
             catch (ArgumentNullException argumentNullException)
             {
@@ -38,6 +47,17 @@ namespace HomeWork09
                 Console.WriteLine($"Получил неопределенную ошибку: {exception.Message}");
             }
         }
-        
+        public void GetDownloadingStatistics()
+        {
+            if (downloadingInfoList == null)
+                return;
+            foreach (var stat in downloadingInfoList)
+            {
+                if (stat.task.IsCompleted)
+                    Helper.PrintLog($"{stat.filename} загружен", ConsoleColor.Magenta);
+                else
+                    Helper.PrintLog($"{stat.filename} не загружен", ConsoleColor.Magenta);
+            }
+        }
     }
 }
