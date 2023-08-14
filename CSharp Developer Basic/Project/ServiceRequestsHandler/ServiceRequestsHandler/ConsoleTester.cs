@@ -1,12 +1,17 @@
 ﻿using ServiceRequestsHandler.API;
 using ServiceRequestsHandler.DTO;
 using ServiceRequestsHandler.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace ServiceRequestsHandler
 {
-    public class Program
+    internal class ConsoleTester
     {
-        public static async Task Main(string[] args)
+        public static async void Test()
         {
             var api = new ServiceAPI();
 
@@ -19,7 +24,7 @@ namespace ServiceRequestsHandler
             #endregion
 
             #region Отправка запроса на получение сервисных задач
-            ColoredPrint("Отправка запроса на получение сервисных задач", ConsoleColor.Magenta);
+            Program.ColoredPrint("Отправка запроса на получение сервисных задач", ConsoleColor.Magenta);
             var serviceTasksApiResponse = await api.SendServiceApiRequest(userTest.GetAuthTokenValue(), HttpMethod.Get, Config.ServiceTasksApiUrl);
             Console.WriteLine(serviceTasksApiResponse);
             #endregion
@@ -38,7 +43,7 @@ namespace ServiceRequestsHandler
                 #endregion
 
                 #region Получение списка комментариев по сервисному запросу
-                ColoredPrint("Получение списка комментариев по сервисному запросу", ConsoleColor.Magenta);
+                Program.ColoredPrint("Получение списка комментариев по сервисному запросу", ConsoleColor.Magenta);
                 var commentsResponse = await api.SendServiceApiRequest(userTest.GetAuthTokenValue(),
                     HttpMethod.Post, serviceTask.GetTaskCommetsUrl());
                 serviceTask.AddCommentsFromJsonResponse(commentsResponse);
@@ -52,7 +57,7 @@ namespace ServiceRequestsHandler
                 #endregion
 
                 #region Получение списка файлов по задаче
-                ColoredPrint("Получение списка файлов по задаче", ConsoleColor.Magenta);
+                Program.ColoredPrint("Получение списка файлов по задаче", ConsoleColor.Magenta);
                 var serviceTaskFilesListResponse = await api.SendServiceApiRequest(userTest.GetAuthTokenValue(), HttpMethod.Get, serviceTask.GetServiceTaskFilesListUtl());
                 Console.WriteLine(serviceTaskFilesListResponse);
                 serviceTask.AddFilesInfoFromJsonResponse(serviceTaskFilesListResponse);
@@ -61,13 +66,6 @@ namespace ServiceRequestsHandler
                 Console.WriteLine(serviceTask);
             }
             Console.ReadLine();
-        }
-        public static void ColoredPrint(string text, ConsoleColor color = ConsoleColor.DarkCyan)
-        {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.WriteLine(text);
-            Console.ForegroundColor = currentColor;
         }
     }
 }

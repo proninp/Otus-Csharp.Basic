@@ -28,7 +28,7 @@ namespace ServiceRequestsHandler.Models
 
         private string GetAuthValue(string credentials)
         {
-            if (string.IsNullOrEmpty(credentials)) // TODO Может быть, тут нужен try catch ?
+            if (string.IsNullOrEmpty(credentials))
                 return "";
             if (string.IsNullOrEmpty(credentials))
                 return "";
@@ -37,7 +37,7 @@ namespace ServiceRequestsHandler.Models
             return authHeader.ToString();
         }
 
-        #region Тестовые функции, которые нужно преоьразовать и убрать
+        #region Тестовые функции, которые нужно вынести в конструктор и убрать
         public void SetAuthPasswordTest(string? authPsw)
         {
             _authPassword = authPsw;
