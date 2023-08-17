@@ -1,39 +1,96 @@
-﻿namespace HomeWork10
+﻿using System.IO;
+using System.Text;
+
+namespace HomeWork10
 {
     internal class Program
     {
-        private const string Directory1 = @"c:\Otus\TestDir1";
-        private const string Directory2 = @"c:\Otus\TestDir2";
+        private static readonly string Directory1 = Path.Combine("c:", "Otus", "TestDir1");
+        private static readonly string Directory2 = Path.Combine("c:", "Otus", "TestDir2");
+        private static IEnumerable<string> FilesList = Enumerable.Range(1, 10).Select(i => $"Simplefile{i.ToString().PadLeft(2, '0')}.txt");
+
         static void Main(string[] args)
         {
-            DirectoryInfo directoryInfo1 = new DirectoryInfo(Directory1);
+            CreateDirectiry(Directory1);
+            CreateDirectiry(Directory2);
 
-            DirectoryInfo directoryInfo2 = new DirectoryInfo(Directory2);
+            CreateFiles(Directory1, FilesList);
+            CreateFiles(Directory2, FilesList);
 
-            if (!directoryInfo1.Exists)
-                directoryInfo1.Create();
-            if (!directoryInfo2.Exists)
-                directoryInfo2.Create();
-            var filename = "SimpleFile";
-            var fileExtension = ".txt";
-            var fileCount = 10;
-            string[] filesList = Enumerable.Range(1, fileCount)
-                .Select(i => Path.Combine(directoryInfo1.FullName, $"{filename}{i}{fileExtension}"))
-                .ToArray();
+            AppendText(Directory1, FilesList);
+            AppendText(Directory2, FilesList);
 
-            for (int i = 0; i < fileCount; i++)
+            PrintFiles(Directory1, FilesList);
+            PrintFiles(Directory2, FilesList);
+        }
+        public static void CreateDirectiry(string dir)
+        {
+            try
             {
-                fullFilename = Path.Combine(directoryInfo1.FullName, $"{filename}{i + 1}{fileExtension}");
-                if (File.Exists(fullFilename))
-                    File.Delete(fullFilename);
-                using(var fs = File.Create(fullFilename))
-                {
+                var directoryInfo = new DirectoryInfo(dir);
 
+                if (!directoryInfo.Exists)
+                    directoryInfo.Create();
+            }
+            catch(Exception ex)
+            {
+                Helper.ConsolePrint(ex.Message, ConsoleColor.DarkRed);
+            }
+        }
+        public static void CreateFiles(string directory, IEnumerable<string> files)
+        {
+            try
+            {
+                foreach(var filename in files)
+                {
+                    using var streamWriter = File.CreateText(Path.Combine(directory, filename), );
+                    streamWriter.WriteLine(filename);
                 }
             }
-
-
+            catch(Exception ex)
+            {
+                Helper.ConsolePrint(ex.Message, ConsoleColor.DarkRed);
+            }
+        }
+        public static void AppendText(string directory, IEnumerable<string> files)
+        {
+            try
+            {
+                foreach(var filename in files)
+                {
+                    using var streamWriter = File.AppendText(Path.Combine(directory, filename));
+                    streamWriter.WriteLine(DateTime.Now.ToString());
+                }
+            }
+            catch (Exception ex)
+            {
+                Helper.ConsolePrint(ex.Message, ConsoleColor.DarkRed);
+            }
+        }
+        public static void PrintFiles(string directory, IEnumerable<string> files)
+        {
+            try
+            {
+                foreach(var filename in files)
+                {
+                    string fullFilename = Path.Combine(directory, filename);
+                    using var streamReader = File.OpenText(fullFilename);
+                    PrintResult(fullFilename, streamReader.ReadToEnd());
+                }
+            }
+            catch(Exception ex)
+            {
+                Helper.ConsolePrint(ex.Message, ConsoleColor.DarkRed);
+            }
+        }
+        private static void PrintResult(string fullFilename, string content)
+        {
+            Console.Write($"Full filename: ");
+            Helper.ConsolePrint($"{fullFilename}; ", false, ConsoleColor.Magenta);
+            Console.WriteLine("With content:");
+            Helper.ConsolePrint(content, true);
+            Console.WriteLine();
         }
         
     }
-}
+};
