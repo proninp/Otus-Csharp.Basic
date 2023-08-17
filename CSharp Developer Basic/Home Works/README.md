@@ -10,3 +10,4 @@
 * [07 Взаимосвязь циклов и рекурсии](/CSharp%20Developer%20Basic/Home%20Works/21.%20HomeWork07)
 * [08 Деревья и кучи](/CSharp%20Developer%20Basic/Home%20Works/22.%20HomeWork08)
 * [09 Делегаты, Event-ы, добавляем асинхронное выполнение](/CSharp%20Developer%20Basic/Home%20Works/30.%20HomeWork09)
+* [10 Работа с файлами](/CSharp%20Developer%20Basic/Home%20Works/32.%20HomeWork10)
