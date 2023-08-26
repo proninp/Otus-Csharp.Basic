@@ -11,3 +11,4 @@
 * [08 Деревья и кучи](/CSharp%20Developer%20Basic/Home%20Works/22.%20HomeWork08)
 * [09 Делегаты, Event-ы, добавляем асинхронное выполнение](/CSharp%20Developer%20Basic/Home%20Works/30.%20HomeWork09)
 * [10 Работа с файлами](/CSharp%20Developer%20Basic/Home%20Works/32.%20HomeWork10)
+* [11 Основные коллекции: очередь, стек, словарь, хешсет](/CSharp%20Developer%20Basic/Home%20Works/35.%20HomeWork11)
