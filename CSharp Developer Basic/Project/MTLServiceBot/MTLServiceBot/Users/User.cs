@@ -5,24 +5,42 @@ namespace MTLServiceBot.Users
 {
     public class User
     {
-        
-        public string? UserName { get; set; }
-        private string? _authLogin;
-        private string? _authPassword;
-        private string? _authToken;
-        
-        public bool IsActive { get; set; }
-        public bool IsAdmin { get; set; }
-        public User(string? login = "", string userName = "", bool isAdmin = false, bool isActive = true)
-        {
-            _authLogin = login;
-            UserName = userName;
-            IsActive = isActive;
-            IsAdmin = isAdmin;
+        public int Id { get; }
+        public string? Name { get; init; }
+        public string? Login { get; init; }
+        public string? Password { get; set; }
+        public bool IsActive 
+        { 
+            get => _isActive != 0;
+            set
+            {
+                _isActive = value ? (byte)1 : (byte)0;
+            }
         }
-        public string GetAuthUserPasswordValue() => GetAuthValue($"{_authLogin}:{_authPassword}");
+        public bool IsAdmin
+        {
+            get => _isAdmin != 0;
+            set
+            {
+                _isAdmin = value ? (byte)1 : (byte)0;
+            }
+        }
+        private string? _authToken;
+        private byte _isActive = 0;
+        private byte _isAdmin = 0;
+        public User(int id, string name = "", string login = "", string password = "", byte isActive = 0, byte isAdmin = 0)
+        {
+            Id = id;
+            Name = name;
+            Login = login;
+            Password = password;
+            _isActive = isActive;
+            _isAdmin = isAdmin;
+        }
 
-        public string GetAuthTokenValue() => GetAuthValue($"{_authLogin}:{_authToken}");
+        public string GetAuthUserPasswordValue() => GetAuthValue($"{Login}:{Password}");
+
+        public string GetAuthTokenValue() => GetAuthValue($"{Login}:{_authToken}");
 
         private string GetAuthValue(string credentials)
         {
@@ -35,15 +53,20 @@ namespace MTLServiceBot.Users
             return authHeader.ToString();
         }
 
+        public override string ToString() =>
+            $"User: {Name}; Login: {Login}; Passord: {Password}; Is Active: {IsActive}; Is Admin: {IsAdmin}";
+
         #region Тестовые функции, которые нужно вынести в конструктор и убрать
         public void SetAuthPasswordTest(string? authPsw)
         {
-            _authPassword = authPsw;
+            Password = authPsw;
         }
         public void SetAuthTokenTest(string? authToken)
         {
             _authToken = authToken;
         }
         #endregion
+
+        
     }
 }

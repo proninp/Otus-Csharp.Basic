@@ -1,6 +1,5 @@
-﻿using MTLServiceBot.API;
+﻿using MTLServiceBot.SQL;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 
 namespace MTLServiceBot
 {
@@ -10,15 +9,16 @@ namespace MTLServiceBot
 
         static void Main(string[] args)
         {
-            
+            //TgBot bot = new TgBot();
+            //bot.RunBot();
+            var usersCount = UserRepository.GetUsersQty();
+            Console.WriteLine(usersCount);
 
-            var api = new ServiceAPI();
-
-            var userTest = new User(0, 0, Environment.GetEnvironmentVariable("API_TEST_LOGIN"));
-            userTest.SetAuthPasswordTest(Environment.GetEnvironmentVariable("API_TEST_PASSWORD"));
-
+            var users = UserRepository.GetUsers();
+            foreach (var user in users)
+                Console.WriteLine(user.ToString());
         }
-        
+
         public static void ColoredPrint(string text, ConsoleColor color = ConsoleColor.DarkCyan)
         {
             var currentColor = Console.ForegroundColor;
