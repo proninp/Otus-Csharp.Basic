@@ -12,3 +12,4 @@
 * [09 Делегаты, Event-ы, добавляем асинхронное выполнение](/CSharp%20Developer%20Basic/Home%20Works/30.%20HomeWork09)
 * [10 Работа с файлами](/CSharp%20Developer%20Basic/Home%20Works/32.%20HomeWork10)
 * [11 Основные коллекции: очередь, стек, словарь, хешсет](/CSharp%20Developer%20Basic/Home%20Works/35.%20HomeWork11)
+* [12 Observable, Immutable и Concurrent коллекции](/CSharp%20Developer%20Basic/Home%20Works/37.%20HomeWork12)
