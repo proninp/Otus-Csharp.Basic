@@ -4,11 +4,15 @@ using Telegram.Bot.Types;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public class Stop : ICommand
+    public class Stop : Command
     {
-        public async Task<bool> Handle(ITelegramBotClient botClient, Message message, Users.User userSession)
+        public Stop(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
-            await botClient.SendTextMessageAsync(message.Chat.Id, $"До свидания, {userSession.Name}! Позднее, мы очистим историю взаимодействий с ботом.");
+        }
+
+        public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        {
+            await botClient.SendTextMessageAsync(message.Chat.Id, $"До свидания, {userSession.User.Name}! Позднее, мы очистим историю взаимодействий с ботом.");
 
             return true;
         }

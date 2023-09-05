@@ -1,13 +1,18 @@
-﻿using Telegram.Bot;
+﻿using MTLServiceBot.Users;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public class Unknown : ICommand
+    public class Unknown : Command
     {
-        public async Task<bool> Handle(ITelegramBotClient botClient, Message message, Users.User userSession)
+        public Unknown(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
-            await botClient.SendTextMessageAsync(message.Chat, $"{userSession.Name}, извините, команда не распознана.\nДля получения списка команд введите /help");
+        }
+
+        public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        {
+            await botClient.SendTextMessageAsync(message.Chat, "Извините, команда не распознана.\nДля получения списка команд введите /help");
             return true;
         }
     }

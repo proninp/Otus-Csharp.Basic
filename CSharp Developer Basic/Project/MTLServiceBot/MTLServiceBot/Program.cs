@@ -1,4 +1,5 @@
 ﻿using MTLServiceBot.SQL;
+using MTLServiceBot.Users;
 using Telegram.Bot;
 
 namespace MTLServiceBot
@@ -11,12 +12,11 @@ namespace MTLServiceBot
         {
             //TgBot bot = new TgBot();
             //bot.RunBot();
-            var usersCount = UserRepository.GetUsersQty();
-            Console.WriteLine(usersCount);
-
-            var users = UserRepository.GetUsers();
-            foreach (var user in users)
-                Console.WriteLine(user.ToString());
+            
+            //Session session = new Session(100, 120, "pps", DateTime.Now);
+            //session.Save();
+            //var sessions = SessionRepository.GetActiveSessions();
+            //sessions.ForEach(s => Console.WriteLine(s.ToString()));
         }
 
         public static void ColoredPrint(string text, ConsoleColor color = ConsoleColor.DarkCyan)

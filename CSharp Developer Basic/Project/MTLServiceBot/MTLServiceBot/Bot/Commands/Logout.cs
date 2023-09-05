@@ -4,9 +4,9 @@ using Telegram.Bot.Types;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public class RequestsList : Command
+    public class Logout : Command
     {
-        public RequestsList(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
+        public Logout(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
         }
 

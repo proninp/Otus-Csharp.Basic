@@ -6,15 +6,17 @@ using Telegram.Bot.Types.Enums;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public class Help : ICommand
+    public class Help : Command
     {
         private readonly string _commandDescription;
-        public Help(IEnumerable<(string Name, string Description)> commandsInfo)
+
+        public Help(string name, string description, bool isRequireAuthentication, IEnumerable<(string Name, string Description)> commandsInfo) :
+            base(name, description, isRequireAuthentication)
         {
             _commandDescription = string.Join("\r\n", commandsInfo.Select(cmd => $"{cmd.Name} - {cmd.Description}"));
         }
 
-        public async Task<bool> Handle(ITelegramBotClient botClient, Message message, Users.User userSession)
+        public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession)
         {
             var helpMessage = "*Инструкция по работе с ботом*\r\n\r\n"
                 + "*Список команд:*\r\n"
