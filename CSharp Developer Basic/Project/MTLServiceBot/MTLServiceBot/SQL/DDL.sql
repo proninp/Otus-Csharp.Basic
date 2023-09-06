@@ -1,4 +1,18 @@
-﻿CREATE TABLE [dbo].[Tg User Sessions](
+﻿CREATE TABLE [dbo].[Tg Application Setup](
+	[timestamp] [timestamp] NOT NULL,
+	[Bot Id] [nvarchar](20) NOT NULL,
+	[Bot Token] [nvarchar](50) NOT NULL,
+	[API Url] [nvarchar](100) NOT NULL,
+ CONSTRAINT [Tg Application Setup$0] PRIMARY KEY CLUSTERED ([Bot Id] ASC) WITH (
+	PAD_INDEX = OFF,
+	STATISTICS_NORECOMPUTE = OFF,
+	IGNORE_DUP_KEY = OFF,
+	ALLOW_ROW_LOCKS = ON,
+	ALLOW_PAGE_LOCKS = ON,
+	OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY])
+ON [PRIMARY]
+
+CREATE TABLE [dbo].[Tg User Sessions](
 	[timestamp] [timestamp] NOT NULL,
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[User Id] [bigint] NOT NULL,
@@ -7,11 +21,7 @@
 	[Password Cipher] [nvarchar](150) NOT NULL,
 	[Login Datetime] [datetime] NOT NULL,
 	[Logout Datetime] [datetime] NOT NULL,
- CONSTRAINT [Tg User Sessions$0] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)
-WITH (
+ CONSTRAINT [Tg User Sessions$0] PRIMARY KEY CLUSTERED ([Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,
 	IGNORE_DUP_KEY = OFF,
@@ -34,11 +44,7 @@ CREATE TABLE [dbo].[Tg Messages Ledger](
 	[Message Content Type] [int] NOT NULL,
 	[Message Text] [nvarchar](250) NOT NULL,
 	[Created Datetime] [datetime] NOT NULL,
- CONSTRAINT [Tg Messages Ledger$0] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)
-WITH (
+ CONSTRAINT [Tg Messages Ledger$0] PRIMARY KEY CLUSTERED ([Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,
 	IGNORE_DUP_KEY = OFF,
@@ -59,11 +65,7 @@ CREATE TABLE [dbo].[Tg Web Requests Ledger](
 	[Http Response Status Code] [int] NOT NULL,
 	[Response Error Text] [nvarchar](250) NOT NULL,
 	[Created Datetime] [datetime] NOT NULL,
- CONSTRAINT [Tg Web Requests Ledger$0] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)
-WITH (
+ CONSTRAINT [Tg Web Requests Ledger$0] PRIMARY KEY CLUSTERED ([Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,
 	IGNORE_DUP_KEY = OFF,

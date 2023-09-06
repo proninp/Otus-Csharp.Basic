@@ -7,7 +7,7 @@ namespace MTLServiceBot.Users
     {
         public long Id { get; }
         public string Name { get; init; }
-        public string? Login { get; init; }
+        public string? Login { get; set; }
         public string? Password { get; set; }
         private string? _authToken;
         public TgUser(long id, string? name = "", string login = "", string password = "")

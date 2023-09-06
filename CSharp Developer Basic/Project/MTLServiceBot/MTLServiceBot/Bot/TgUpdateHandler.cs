@@ -11,16 +11,18 @@ namespace MTLServiceBot.Bot
         private static Dictionary<long, Session> userSessions = new Dictionary<long, Session>();
         private readonly string _commandLogTemplate = "Команда {@commandText}, исключение: {@message}";
         private readonly Command _unknownCommand;
+        private readonly Command _login;
         private readonly List<Command> _commands;
         public List<Command> Commands { get => _commands; }
 
         public TgUpdateHandler()
         {
+            _login = new Login("/login", "Инициирует процесс авторизации", false);
             _unknownCommand = new Unknown("/unknown", "Оповещение о неизвестной команде", false);
             _commands = new List<Command>()
             {
                 new Start("/start", "Запускает использование бота", false),
-                new Login("/login", "Инициирует процесс авторизации", false),
+                _login,
                 new RequestsList("/getRequests", "Получание информацию о записях сервисных запросов", true),
                 new Stop("/stop", "Завершает использования бота", false)
             };
@@ -32,19 +34,17 @@ namespace MTLServiceBot.Bot
             if (!CheckUpdateRefferenceValid(update))
                 return;
             var message = update.Message;
-            var commandText = message.Text;
-            
+            var commandText = message?.Text ?? "";
 
-            Console.WriteLine($"Received {message.Text} message in '{message.Chat.Id}' chat from id: {message.From.Id}"); // Log
+            Console.WriteLine($"Received {commandText} message in '{message.Chat.Id}' chat from id: {message.From.Id}"); // Log
 
-            GetUserSession(out Session userSession, message);
-
-            var command = _commands.Find(cmd => cmd.Name == commandText) ?? _unknownCommand;
+            Session session = GetUserSession(message);
+            Command command = GetCommand(session, commandText);
             try
             {
-                var isAuthorized = await command.CheckAuthentication(botClient, message, userSession);
+                var isAuthorized = await command.CheckAuthentication(botClient, message, session);
                 if (isAuthorized)
-                    await command.Handle(botClient, message, userSession);
+                    await command.Handle(botClient, message, session);
             }
             catch (Exception e)
             {
@@ -72,8 +72,9 @@ namespace MTLServiceBot.Bot
             return true;
         }
 
-        private void GetUserSession(out Session userSession, Message message)
+        private Session GetUserSession(Message message)
         {
+            Session userSession;
             var userId = message.From.Id;
             TgUser? user = null;
             if (userSessions.ContainsKey(userId))
@@ -91,6 +92,17 @@ namespace MTLServiceBot.Bot
                 user = new TgUser(userId, message.From.Username);
                 userSession.User = user;
             }
+            return userSession;
+        }
+
+        private Command GetCommand(Session session, string commandText)
+        {
+            Command command;
+            if (session.AuthStep == AuthStep.Username || session.AuthStep == AuthStep.Password || session.AuthStep == AuthStep.CheckAuthentication)
+                command = _login;
+            else
+                command = _commands.Find(cmd => cmd.Name == commandText) ?? _unknownCommand;
+            return command;
         }
     }
 }

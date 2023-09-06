@@ -1,4 +1,5 @@
-﻿using Telegram.Bot;
+﻿using MTLServiceBot.SQL;
+using Telegram.Bot;
 
 namespace MTLServiceBot.Bot
 {
@@ -9,9 +10,7 @@ namespace MTLServiceBot.Bot
         public readonly ITelegramBotClient Client;
         public TgBotClient()
         {
-            Client = new TelegramBotClient(AppConfig.BotToken ??
-                throw new InvalidOperationException("Необходимо установить токен для бот-клиента")
-            );
+            Client = new TelegramBotClient(ConfigRepository.GetBotToken());
             _tgUser = Client.GetMeAsync().Result;
         }
     }

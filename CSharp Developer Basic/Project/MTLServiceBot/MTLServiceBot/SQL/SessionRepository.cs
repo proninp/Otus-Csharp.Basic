@@ -21,7 +21,19 @@ namespace MTLServiceBot.SQL
             query.Append($" [User Id] = {userSession.User.Id}");
             query.Append($" AND [Chat Id] = {userSession.ChatId}");
             query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
-            return db.QueryFirstOrDefault<int>(query.ToString()) == 1;
+            return db.QueryFirstOrDefault<int>(query.ToString()) > 0;
+        }
+        public static void GetActiveSessionCredentials(this Session userSession)
+        {
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            var query = new StringBuilder();
+            query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [Login] login, [Password Cipher] password, [Login Datetime] loginDatetime WHERE");
+            query.Append($" [User Id] = {userSession.User.Id}");
+            query.Append($" AND [Chat Id] = {userSession.ChatId}");
+            query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append(" ORDER BY [Login Datetime] DESC");
+            var session = db.QueryFirstOrDefault<Session>(query.ToString());
+            userSession.SetCredentials(session);
         }
         public static List<Session> GetActiveSessions()
         {
@@ -44,7 +56,7 @@ namespace MTLServiceBot.SQL
                 id = userSession.User.Id,
                 chatId = userSession.ChatId,
                 login = userSession.User.Login,
-                password = userSession.User.Password,
+                password = EncryptionHelper.Encrypt(userSession.User.Password, userSession.User.Id.ToString(), userSession.ChatId.ToString()),
                 loginDatetime = userSession.LoginDatetime,
                 logoutDatetime = userSession.LogoutDatetime
             });
@@ -52,9 +64,7 @@ namespace MTLServiceBot.SQL
         public static void LogoutSession(this Session userSession)
         {
             if (!CheckActiveSessionExists(userSession))
-            {
                 return;
-            }
             using var db = new SqlConnection(AppConfig.ConnectionString);
             StringBuilder query = new StringBuilder();
             query.Append("UPDATE [dbo].[Tg User Sessions] SET");
