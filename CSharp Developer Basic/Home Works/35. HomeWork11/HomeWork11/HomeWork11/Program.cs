@@ -4,18 +4,18 @@
     {
         static void Main(string[] args)
         {
-            var arr = new string[] { "Zero", "One", "Two", "Three", "Four", "Five" };
+            var elemsCount = 100;
             var map = new OtusDictionary();
 
-            for (int i = 0; i < arr.Length; i++)
-                map.Add(i, arr[i]);
+            for (int i = 0; i < elemsCount; i++)
+                map[i]= $"0x{i:X}";
 
-            for (int i = 0; i < arr.Length; i++)
-                Console.WriteLine($"Key: {i}; Value: {map.Get(i)}");
+            foreach (var item in map)
+                Console.WriteLine(item);
 
             Console.WriteLine();
-            map[3] = "Three by Indexer";
-            Console.WriteLine($"Key: {3}; Value: {map[3]}");
+            map[32] = $"{map[32]} by Indexer";
+            Console.WriteLine(map[32]);
 
             Console.ReadLine();
         }
