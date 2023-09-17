@@ -2,27 +2,17 @@
 {
     public static class TopExtension
     {
-        public static IEnumerable<T> Top<T>(this IEnumerable<T> collection, int percent)
+        public static IEnumerable<T> Top<T>(this IEnumerable<T> collection, int percent) => collection.Top(percent, x => x);
+
+        public static IEnumerable<T> Top<T, K>(this IEnumerable<T> collection, int percent, Func<T, K> predicate)
         {
-            CheckPercentage(percent);
-            var elementsCount = GetElementsCount(collection, percent);
-            return collection.OrderByDescending(x => x).Take(elementsCount);
-        }
-        public static IEnumerable<T> Top<T>(this IEnumerable<T> collection, int percent, Func<T, int> predicate)
-        {
-            CheckPercentage(percent);
-            var elementsCount = GetElementsCount(collection, percent);
+            if (collection is null)
+                throw new ArgumentNullException(nameof(collection));
+            if (percent is < 1 or > 100)
+                throw new ArgumentOutOfRangeException(nameof(percent), percent, "Параметр должен быть в диапазоне от 1 до 100.");
+            
+            var elementsCount = (int)Math.Ceiling(collection.Count() / 100.0 * percent);
             return collection.OrderByDescending(predicate).Take(elementsCount);
         }
-
-        private static void CheckPercentage(int percent)
-        {
-            if (percent is < 1 or > 100)
-                throw new ArgumentException("Параметр должен быть в диапазоне от 1 до 100.");
-        }
-        
-        private static int GetElementsCount<T>(IEnumerable<T> collection, int percent) =>
-            (int)Math.Round(collection.Count() / 100.0 * percent, MidpointRounding.AwayFromZero);
-
     }
 }

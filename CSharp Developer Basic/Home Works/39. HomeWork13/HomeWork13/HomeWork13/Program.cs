@@ -10,7 +10,6 @@
 
             var persons = new List<Person>()
             {
-
                 new Person("Bjarne", 72),
                 new Person("James", 68),
                 new Person("Bill", 67),
@@ -19,7 +18,7 @@
                 new Person("Brendan", 62)
             };
             var personsPart = persons.Top(50, p => p.Age);
-            Console.WriteLine(string.Join(", ", personsPart));
+            Console.WriteLine(string.Join("\n", personsPart));
         }
     }
 }
