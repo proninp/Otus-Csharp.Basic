@@ -13,13 +13,6 @@ namespace MTLServiceBot
         public static readonly string? SetupId = Environment.GetEnvironmentVariable("MTL_S_BOT_ID");
         public static readonly string ConnectionString = $"Data Source={DbHost};Initial Catalog={DbName};User ID={DbUser};" +
             $"Password={DbPass};Integrated Security=SSPI;TrustServerCertificate=True;";
-        
-        private static readonly string? mainApiUrl = Environment.GetEnvironmentVariable("MTL_MAIN_API_URL");
         public static string AcceptHeader = "application/json";
-        public static readonly string? AuthApiUrl = $"{mainApiUrl}/GetST";
-        public static readonly string? ServiceTasksApiUrl = $"{mainApiUrl}/ServiceEngineerRequests";
-        public static readonly string? SetTaskStatusApiUrl = $"{mainApiUrl}/SetStatus";
-        public static readonly string? SetTaskFilesListUrl = $"{mainApiUrl}/ServiceFilesList";
-        public static readonly string? AddCommentApiUrl = $"{mainApiUrl}/AddRequestTaskComment";
     }
 }

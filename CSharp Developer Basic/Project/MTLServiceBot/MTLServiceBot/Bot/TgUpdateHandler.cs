@@ -9,7 +9,7 @@ namespace MTLServiceBot.Bot
     public class TgUpdateHandler
     {
         private static Dictionary<long, Session> userSessions = new Dictionary<long, Session>();
-        private readonly string _commandLogTemplate = "Команда {@commandText}, исключение: {@message}";
+        private readonly string _commandLogTemplate = "Команда {0}, исключение: {1}";
         private readonly Command _unknownCommand;
         private readonly Command _login;
         private readonly List<Command> _commands;
@@ -18,14 +18,16 @@ namespace MTLServiceBot.Bot
         public TgUpdateHandler()
         {
             _login = new Login("/login", "Инициирует процесс авторизации", false);
-            _unknownCommand = new Unknown("/unknown", "Оповещение о неизвестной команде", false);
+            _unknownCommand = new Unknown("/unknown", "Оповещает о неизвестной команде", false);
             _commands = new List<Command>()
             {
                 new Start("/start", "Запускает использование бота", false),
                 _login,
-                new RequestsList("/getRequests", "Получание информацию о записях сервисных запросов", true),
+                new Logout("/logout", "Завершает сессию пользователя", true),
+                new RequestsList("/servicerequests", "Список сервисных запросов", true),
                 new Stop("/stop", "Завершает использования бота", false)
             };
+
             _commands.Add(new Help("/help", "Инструкции по использованию бота", false, _commands.Select(c => (c.Name, c.Description))));
             _commands.Add(_unknownCommand);
         }
@@ -48,7 +50,7 @@ namespace MTLServiceBot.Bot
             }
             catch (Exception e)
             {
-                Console.WriteLine(_commandLogTemplate, commandText, e.Message);
+                Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message), ConsoleColor.Red); // TODO Logging
             }
         }
         private bool CheckUpdateRefferenceValid(Update? update)
@@ -57,9 +59,8 @@ namespace MTLServiceBot.Bot
             {
                 Console.WriteLine($"Я еще не умею обрабатывать тип {update.Type}");
                 return false;
-
             }
-            if (update.Message == null)
+            if (update.Message is null)
             {
                 Console.WriteLine($"Нераспознано сообщение {update.Id}");
                 return false;
@@ -98,7 +99,7 @@ namespace MTLServiceBot.Bot
         private Command GetCommand(Session session, string commandText)
         {
             Command command;
-            if (session.AuthStep == AuthStep.Username || session.AuthStep == AuthStep.Password || session.AuthStep == AuthStep.CheckAuthentication)
+            if (session.AuthStep is not AuthStep.None)
                 command = _login;
             else
                 command = _commands.Find(cmd => cmd.Name == commandText) ?? _unknownCommand;

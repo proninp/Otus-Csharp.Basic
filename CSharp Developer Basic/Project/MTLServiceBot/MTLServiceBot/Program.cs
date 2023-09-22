@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.SQL;
+﻿using MTLServiceBot.Bot;
+using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 
@@ -6,13 +7,14 @@ namespace MTLServiceBot
 {
     internal class Program
     {
-        private static ITelegramBotClient _bot;
+        private static TgBot? _bot;
 
         static void Main(string[] args)
         {
-            //TgBot bot = new TgBot();
-            //bot.RunBot();
-            
+            _bot = new TgBot();
+            _bot.RunBot();
+            Console.ReadKey();
+
             //Session session = new Session(100, 120, "pps", DateTime.Now);
             //session.Save();
             //var sessions = SessionRepository.GetActiveSessions();

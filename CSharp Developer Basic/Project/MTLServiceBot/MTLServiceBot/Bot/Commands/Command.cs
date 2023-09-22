@@ -21,7 +21,7 @@ namespace MTLServiceBot.Bot.Commands
         }
         public async Task<bool> CheckAuthentication(ITelegramBotClient botClient, Message message, Session userSession)
         {
-            if (!IsRequireAuthentication || userSession.IsAuthenticated)
+            if (!IsRequireAuthentication || userSession.IsAuthorized)
                 return true;
 
             var unauthMessage = $"Для выполнения команды {Name} требуется авторизация.";
@@ -30,6 +30,9 @@ namespace MTLServiceBot.Bot.Commands
             return false;
         }
 
-        public abstract Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession);
+        public virtual async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        {
+            await botClient.SendTextMessageAsync(message.Chat, $"Я пока что не умею обрабатывать данную команду", null, ParseMode.Markdown);
+        }
     }
 }

@@ -8,7 +8,7 @@ namespace MTLServiceBot.SQL
         public static string GetBotToken()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
-            var query = $"SELECT [Bot Token] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = {GetSetupId()}";
+            var query = $"SELECT [Bot Token] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = '{GetSetupId()}'";
             var token = db.QueryFirstOrDefault<string>(query);
             if (string.IsNullOrEmpty(token))
                 throw new InvalidOperationException("Необходимо указать токен в таблице настроек Telegram бота.");
@@ -17,7 +17,7 @@ namespace MTLServiceBot.SQL
         public static string GetApiUrl()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
-            var query = $"SELECT [API Url] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = {GetSetupId()}";
+            var query = $"SELECT [API Url] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = '{GetSetupId()}'";
             var token = db.QueryFirstOrDefault<string>(query);
             if (string.IsNullOrEmpty(token))
                 throw new InvalidOperationException("Необходимо указать адрес API в таблице настроек Telegram бота.");

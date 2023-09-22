@@ -10,11 +10,9 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
         {
-            await botClient.SendTextMessageAsync(message.Chat, $"Привет, {userSession.User.Name}!");
-            await botClient.SendTextMessageAsync(message.Chat, "Введите /login для авторизации.");
-            return true;
+            await botClient.SendTextMessageAsync(message.Chat, $"Привет, {session.User.Name}!");
         }
     }
 }

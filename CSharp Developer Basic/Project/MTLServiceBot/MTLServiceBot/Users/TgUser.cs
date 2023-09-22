@@ -9,7 +9,7 @@ namespace MTLServiceBot.Users
         public string Name { get; init; }
         public string? Login { get; set; }
         public string? Password { get; set; }
-        private string? _authToken;
+        public string? AuthToken { get; set; }
         public TgUser(long id, string? name = "", string login = "", string password = "")
         {
             Id = id;
@@ -17,10 +17,10 @@ namespace MTLServiceBot.Users
             Login = login;
             Password = password;
         }
-
+        
         public string GetAuthUserPasswordValue() => GetAuthValue($"{Login}:{Password}");
 
-        public string GetAuthTokenValue() => GetAuthValue($"{Login}:{_authToken}");
+        public string GetAuthTokenValue() => GetAuthValue($"{Login}:{AuthToken}");
 
         private string GetAuthValue(string credentials)
         {
@@ -34,19 +34,6 @@ namespace MTLServiceBot.Users
         }
 
         public override string ToString() =>
-            $"User: {Name}; Login: {Login}; Passord: {Password}";
-
-        #region Тестовые функции, которые нужно вынести в конструктор и убрать
-        public void SetAuthPasswordTest(string? authPsw)
-        {
-            Password = authPsw;
-        }
-        public void SetAuthTokenTest(string? authToken)
-        {
-            _authToken = authToken;
-        }
-        #endregion
-
-        
+            $"User: {Name}; Login: {Login}";
     }
 }

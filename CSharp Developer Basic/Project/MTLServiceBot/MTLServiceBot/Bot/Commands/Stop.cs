@@ -10,11 +10,9 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        public override async Task Handle(ITelegramBotClient botClient, Message message, Session userSession)
         {
             await botClient.SendTextMessageAsync(message.Chat.Id, $"До свидания, {userSession.User.Name}! Позднее, мы очистим историю взаимодействий с ботом.");
-
-            return true;
         }
     }
 }

@@ -4,7 +4,6 @@
     {
         None,
         Username,
-        Password,
-        CheckAuthentication
+        Password
     }
 }
