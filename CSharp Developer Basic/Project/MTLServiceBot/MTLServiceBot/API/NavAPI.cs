@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace MTLServiceBot.API
 {
@@ -9,17 +10,7 @@ namespace MTLServiceBot.API
         private static HttpClient? _httpClient;
         public ApiResponseStatus ResponseStatus
         {
-            get
-            {
-                if (_httpResponse is not null)
-                {
-                    if (_httpResponse.IsSuccessStatusCode)
-                        return ApiResponseStatus.Success;
-                    if (_httpResponse.StatusCode == HttpStatusCode.Unauthorized)
-                        return ApiResponseStatus.Unauthorized;
-                }
-                return ApiResponseStatus.Error;
-            }
+            get => GetApiResponseStatus();
         }
         private HttpResponseMessage? _httpResponse;
         public string? _responseText;
@@ -37,7 +28,7 @@ namespace MTLServiceBot.API
         /// <param name="apiUrl">Адрес URL</param>
         /// <param name="content">Содержимое сообщения</param>
         /// <returns>Ответ от сервера MS Dynamics Nav</returns>
-        public async Task<ApiResponse> SendServiceApiRequest(string authHeader, HttpMethod method, string? apiUrl, JsonContent? content = null)
+        public async Task<ApiResponse> SendServiceApiRequest(string authHeader, HttpMethod method, string apiUrl, JsonContent? content = null)
         {
             _responseText = string.Empty;
             try
@@ -60,6 +51,7 @@ namespace MTLServiceBot.API
             
             if (!method.Equals(HttpMethod.Get) && content is not null)
                 request.Content = content;
+            Program.ColoredPrint(request.ToString()); // TODO Logging
             var response = await _httpClient.SendAsync(request);
             return response;
         }
@@ -67,13 +59,38 @@ namespace MTLServiceBot.API
         private async Task GetApiResponse()
         {
             if (_httpResponse is null || !_httpResponse.IsSuccessStatusCode)
+            {
+                LogHttpResponseError();
                 return;
-            
+            }
+            Program.ColoredPrint(_httpResponse.ToString()); // TODO Logging
             var jsonResponse = await _httpResponse.Content.ReadAsStringAsync();
             if (string.IsNullOrEmpty(jsonResponse))
                 return;
             JObject jObject = JObject.Parse(jsonResponse);
             _responseText = jObject["value"]?.ToString();
+        }
+        private ApiResponseStatus GetApiResponseStatus()
+        {
+            if (_httpResponse is not null)
+            {
+                if (_httpResponse.IsSuccessStatusCode)
+                    return ApiResponseStatus.Success;
+                if (_httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                    return ApiResponseStatus.Unauthorized;
+            }
+            return ApiResponseStatus.Error;
+        }
+        private void LogHttpResponseError()
+        {
+            // TODO Logging
+            var sb = new StringBuilder();
+            sb.AppendLine($"{nameof(_httpResponse)} error at {DateTime.Now}");
+            if (_httpResponse is not null)
+                sb.AppendLine(_httpResponse.ToString());
+            else
+                sb.AppendLine($"{nameof(_httpResponse)} is null");
+            Program.ColoredPrint(sb.ToString(), ConsoleColor.Red);
         }
     }
 }

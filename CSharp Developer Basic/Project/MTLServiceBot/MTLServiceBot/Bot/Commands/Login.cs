@@ -13,14 +13,6 @@ namespace MTLServiceBot.Bot.Commands
 
         public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
         {
-            if (!session.IsAuthorized)
-            {
-                if (session.CheckActiveSessionExists())
-                {
-                    session.GetActiveSessionCredentials();
-                    session.IsAuthorized = (session.User.Login?.Length > 0) && (session.User.Password?.Length > 0);
-                }
-            }
             if (session.IsAuthorized)
             {
                 await botClient.SendTextMessageAsync(message.Chat, $"Вы уже авторизованы, как {session.User.Login}.", null, ParseMode.Markdown);
@@ -68,13 +60,12 @@ namespace MTLServiceBot.Bot.Commands
             }
             session.User.Password = password;
 
-            await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default);
-
             var api = ServiceAPI.GetInstance();
             var response = await api.Authorize(session);
             if (response.Status == ApiResponseStatus.Success && !string.IsNullOrEmpty(response.ResponseText))
             {
-                session.Login(response.ResponseText);
+                session.SaveSession(response.ResponseText);
+                await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default);
                 await botClient.SendTextMessageAsync(message.Chat, $"Добро пожаловать, {session.User.Name}! Вы успешно авторизованы");
             }
             else

@@ -1,4 +1,8 @@
-﻿namespace MTLServiceBot.Bot.Commands
+﻿using MTLServiceBot.Users;
+using Telegram.Bot;
+using Telegram.Bot.Types;
+
+namespace MTLServiceBot.Bot.Commands
 {
     public class RequestsList : Command
     {
@@ -6,10 +10,9 @@
         {
         }
 
-        //public override async Task<bool> Handle(ITelegramBotClient botClient, Message message, Session session)
-        //{
-        //    await botClient.SendTextMessageAsync(message.Chat, $"Я пока что не умею обрабатывать данную команду", null, ParseMode.Markdown);
-        //    return true;
-        //}
+        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        {
+                        
+        }
     }
 }

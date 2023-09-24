@@ -18,7 +18,7 @@ namespace MTLServiceBot.Bot.Commands
                 await botClient.SendTextMessageAsync(message.Chat, "Вы не авторизованы в системе, выполнение команды невозможно", null, ParseMode.Markdown);
                 return;
             }
-            session.Logout();
+            session.EndSession();
             await botClient.SendTextMessageAsync(message.Chat, $"{session.User.Name}, ваша сессия успешно завершена", null, ParseMode.Markdown);
         }
     }

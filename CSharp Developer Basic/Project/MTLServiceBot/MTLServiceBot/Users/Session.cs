@@ -7,9 +7,20 @@ namespace MTLServiceBot.Users
         public TgUser User { get; set; }
         public long ChatId { get; set; }
         public AuthStep AuthStep { get; set; }
-        public bool IsAuthorized { get; set; }
+        private bool _isAuthorized;
+        public bool IsAuthorized { get => CheckAuthorization(); }
+        private string _authToken;
+        public string AuthToken
+        {
+            set
+            {
+                if (value?.Length > 0)
+                    _authToken = value;
+            }
+        }
         public DateTime LoginDatetime { get; set; }
         public DateTime LogoutDatetime { get; set; }
+
 
         public Session(long id, long chatId, string? username, DateTime loginDatetime, DateTime logoutDatetime)
             : this(id, chatId, username, "", "", loginDatetime)
@@ -29,10 +40,22 @@ namespace MTLServiceBot.Users
             ChatId = chatId;
             LoginDatetime = loginDatetime;
             AuthStep = AuthStep.None;
+            _authToken = "";
         }
 
         private DateTime GetZeroDateTime() => DateTime.Parse("1753-01-01");
 
+        private bool CheckAuthorization()
+        {
+            if (_isAuthorized)
+                return true;
+            if (this.CheckActiveSessionExists())
+            {
+                this.GetActiveSessionCredentials();
+                _isAuthorized = (User.Login?.Length > 0) && (User.Password?.Length > 0);
+            }
+            return _isAuthorized;
+        }
 
         public void SetCredentials(Session? session)
         {
@@ -43,12 +66,13 @@ namespace MTLServiceBot.Users
             User.Login = session.User.Login;
             User.Password = pass;
             LoginDatetime = session.LoginDatetime;
-            IsAuthorized = (User.Login?.Length > 0) && (User.Password?.Length > 0);
+            _isAuthorized = (User.Login?.Length > 0) && (User.Password?.Length > 0);
         }
 
-        public void Login(string apiToken)
+        public void SaveSession(string apiToken)
         {
-            IsAuthorized = true;
+            _isAuthorized = true;
+            _authToken = apiToken;
             if (!this.CheckActiveSessionExists())
             {
                 LoginDatetime = DateTime.Now;
@@ -57,15 +81,15 @@ namespace MTLServiceBot.Users
             }
         }
 
-        public void Logout()
+        public void EndSession()
         {
-            IsAuthorized = false;
+            _isAuthorized = false;
             AuthStep = AuthStep.None;
             LogoutDatetime = DateTime.Now;
             this.LogoutSession();
         }
 
         public override string ToString() =>
-            $"UserId: {User.Id}; Username: {User.Name}; ChatId: {ChatId}; Login Datetime: {LoginDatetime}";
+            $"UserId: {User.Id}; Username: {User.Name}; ChatId: {ChatId}; SaveSession Datetime: {LoginDatetime}";
     }
 }
