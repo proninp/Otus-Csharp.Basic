@@ -32,6 +32,7 @@ select f.title
 from film f
 where f.length > 100; 
 ```
+![result](HomeWork14/1.png)
 
 Уникальные имена (без фамилий) актеров:
 
@@ -39,6 +40,7 @@ where f.length > 100;
 select distinct a.first_name
 from actor a;
 ```
+![result](HomeWork14/2.png)
 
 Рейтинг фильма и количество фильмов с таким рейтингом, но только для тех рейтингов, которые содержат букву "G":
 
@@ -49,6 +51,7 @@ from film f
 where f.rating::text like '%G%'
 group by f.rating;
 ```
+![result](HomeWork14/3.png)
 
 Имена и фамилии только тех актеров, которые снимались менее, чем в 20 фильмах:
 
@@ -64,3 +67,4 @@ select a.first_name
 from actor a
 join q on a.actor_id = q.actor_id;
 ```
+![result](HomeWork14/4.png)
