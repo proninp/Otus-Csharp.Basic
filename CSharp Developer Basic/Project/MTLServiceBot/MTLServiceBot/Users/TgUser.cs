@@ -34,6 +34,6 @@ namespace MTLServiceBot.Users
         }
 
         public override string ToString() =>
-            $"User: {Name}; SaveSession: {Login}";
+            $"User: {Name}; SetSessionAuthorization: {Login}";
     }
 }

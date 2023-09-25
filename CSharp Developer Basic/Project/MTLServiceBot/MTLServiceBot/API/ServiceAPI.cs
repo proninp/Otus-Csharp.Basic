@@ -42,12 +42,7 @@ namespace MTLServiceBot.API
         public async Task<ApiResponse> Authorize(Session session) =>
             await _api.SendServiceApiRequest(session.User.GetAuthUserPasswordValue(), HttpMethod.Post, _authApiUrl);
 
-        public async Task<ApiResponse> GetServiceTasksList(Session session)
-        {
-            if 
-            var response = await _api.SendServiceApiRequest(session.User.GetAuthUserPasswordValue(), HttpMethod.Get, _serviceTasksApiUrl);
-            if (response is not null && response.Status.)
-        }
-            
+        public async Task<ApiResponse> GetServiceTasksList(Session session) =>
+            await _api.SendServiceApiRequest(session.User.GetAuthTokenValue(), HttpMethod.Get, _serviceTasksApiUrl);
     }
 }

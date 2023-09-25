@@ -64,16 +64,16 @@ namespace MTLServiceBot.Bot.Commands
             var response = await api.Authorize(session);
             if (response.Status == ApiResponseStatus.Success && !string.IsNullOrEmpty(response.ResponseText))
             {
-                session.SaveSession(response.ResponseText);
+                session.SetSessionAuthorization(response.ResponseText);
                 await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default);
                 await botClient.SendTextMessageAsync(message.Chat, $"Добро пожаловать, {session.User.Name}! Вы успешно авторизованы");
             }
             else
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
-                    await botClient.SendTextMessageAsync(message.Chat, $"Вы ввели неправильный логин или пароль, попробуйте снова");
+                    await botClient.SendTextMessageAsync(message.Chat, "Вы ввели неправильный логин или пароль, попробуйте снова");
                 else
-                    await botClient.SendTextMessageAsync(message.Chat, $"Ошибка соединения с сервером, попробуйте выполнить авторизацию позднее");
+                    await botClient.SendTextMessageAsync(message.Chat, "Ошибка соединения с сервером, попробуйте выполнить авторизацию позднее");
             }
         }
 

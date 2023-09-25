@@ -27,12 +27,12 @@ namespace MTLServiceBot.SQL
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = new StringBuilder();
-            query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [SaveSession] login, [Password Cipher] password, [SaveSession Datetime] loginDatetime");
+            query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [SetSessionAuthorization] login, [Password Cipher] password, [SetSessionAuthorization Datetime] loginDatetime");
             query.Append(" FROM [dbo].[Tg User Sessions]");
             query.Append($" WHERE [User Id] = {userSession.User.Id}");
             query.Append($" AND [Chat Id] = {userSession.ChatId}");
             query.Append(" AND [EndSession Datetime] = '1753-01-01 00:00:00.000'");
-            query.Append(" ORDER BY [SaveSession Datetime] DESC");
+            query.Append(" ORDER BY [SetSessionAuthorization Datetime] DESC");
             var session = db.QueryFirstOrDefault<Session>(query.ToString());
             userSession.SetCredentials(session);
         }
@@ -40,7 +40,7 @@ namespace MTLServiceBot.SQL
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             StringBuilder query = new StringBuilder();
-            query.Append("SELECT [User Id] id, [Chat Id] chatId, [SaveSession] login, [Password Cipher] password, [SaveSession Datetime] loginDatetime");
+            query.Append("SELECT [User Id] id, [Chat Id] chatId, [SetSessionAuthorization] login, [Password Cipher] password, [SetSessionAuthorization Datetime] loginDatetime");
             query.Append(" FROM [dbo].[Tg User Sessions]");
             query.Append(" WHERE [EndSession Datetime] = '1753-01-01 00:00:00.000'");
             return db.Query<Session>(query.ToString()).ToList();
@@ -50,7 +50,7 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = new StringBuilder();
             query.Append("INSERT INTO[dbo].[Tg User Sessions]");
-            query.Append(" ([User Id], [Chat Id], [SaveSession], [Password Cipher], [SaveSession Datetime], [EndSession Datetime])");
+            query.Append(" ([User Id], [Chat Id], [SetSessionAuthorization], [Password Cipher], [SetSessionAuthorization Datetime], [EndSession Datetime])");
             query.Append(" VALUES (@id, @chatId, @login, @password, @loginDatetime, @logoutDatetime)");
             db.Execute(query.ToString(), new
             {

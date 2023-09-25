@@ -2,6 +2,8 @@
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
+using Azure;
+using MTLServiceBot.API;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -19,15 +21,36 @@ namespace MTLServiceBot.Bot.Commands
             _description = description;
             _isRequireAuthentication = isRequireAuthentication;
         }
-        public async Task<bool> CheckAuthentication(ITelegramBotClient botClient, Message message, Session userSession)
+        public async Task<bool> CheckAuthentication(ITelegramBotClient botClient, Message message, Session session)
         {
-            if (!IsRequireAuthentication || userSession.IsAuthorized)
+            if (!IsRequireAuthentication || session.IsAuthorized)
                 return true;
 
             var unauthMessage = $"Для выполнения команды {Name} требуется авторизация.";
             await botClient.SendTextMessageAsync(message.Chat, unauthMessage, null, ParseMode.Markdown);
             
             return false;
+        }
+
+        public virtual async Task<bool> ReAuthentication(ITelegramBotClient botClient, Message message, Session session)
+        {
+            var api = ServiceAPI.GetInstance();
+            var authResponse = await api.Authorize(session);
+            switch (authResponse.Status)
+            {
+                case ApiResponseStatus.Unauthorized:
+                    await botClient.SendTextMessageAsync(message.Chat, CaptionConstants.UnauthorizedError);
+                    return false;
+                case ApiResponseStatus.Error:
+                    await botClient.SendTextMessageAsync(message.Chat, CaptionConstants.ServerConnectionError);
+                    return false;
+                case ApiResponseStatus.Success:
+                    session.SetSessionAuthorization(authResponse.ResponseText);
+                    return true;
+                default:
+                    Program.ColoredPrint($"Обработка ответа {nameof(authResponse)} со значением {authResponse} не реализована в системе", ConsoleColor.Red);
+                    return false;
+            }
         }
 
         public virtual async Task Handle(ITelegramBotClient botClient, Message message, Session session)

@@ -17,18 +17,18 @@ namespace MTLServiceBot.Bot
 
         public TgUpdateHandler()
         {
-            _login = new Login("/login", "Инициирует процесс авторизации", false);
-            _unknownCommand = new Unknown("/unknown", "Оповещает о неизвестной команде", false);
+            _login = new Login(CaptionConstants.LogoutCaption, CaptionConstants.LoginDescription, false);
+            _unknownCommand = new Unknown(CaptionConstants.UnknownCaption, CaptionConstants.UnknownDescription, false);
             _commands = new List<Command>()
             {
-                new Start("/start", "Запускает использование бота", false),
+                new Start(CaptionConstants.StartCaption, CaptionConstants.StartDescription, false),
                 _login,
-                new Logout("/logout", "Завершает сессию пользователя", true),
-                new RequestsList("/servicerequests", "Список сервисных запросов", true),
-                new Stop("/stop", "Завершает использования бота", false)
+                new Logout(CaptionConstants.LogoutCaption, CaptionConstants.LogoutDescription, true),
+                new GetServiceTasks(CaptionConstants.ServiceTasksCaption, CaptionConstants.ServiceDescription, true),
+                new Stop(CaptionConstants.StopCaption, CaptionConstants.StopDescription, false)
             };
 
-            _commands.Add(new Help("/help", "Инструкции по использованию бота", false, _commands.Select(c => (c.Name, c.Description))));
+            _commands.Add(new Help(CaptionConstants.HelpCaption, CaptionConstants.HelpDescription, false, _commands.Select(c => (c.Name, c.Description))));
             _commands.Add(_unknownCommand);
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -38,7 +38,7 @@ namespace MTLServiceBot.Bot
             var message = update.Message;
             var commandText = message?.Text ?? "";
 
-            Console.WriteLine($"Received {commandText} message in '{message.Chat.Id}' chat from id: {message.From.Id}"); // Log
+            Program.ColoredPrint($"Получена команда [{commandText}] в чате [{message.Chat.Id}] от: [{message.From.Id}]", ConsoleColor.Green); // TODO Logging
 
             Session session = GetUserSession(message);
             Command command = GetCommand(session, commandText);

@@ -69,10 +69,15 @@ namespace MTLServiceBot.Users
             _isAuthorized = (User.Login?.Length > 0) && (User.Password?.Length > 0);
         }
 
-        public void SaveSession(string apiToken)
+        public void SetSessionAuthorization(string apiToken)
         {
             _isAuthorized = true;
             _authToken = apiToken;
+            SaveSession();
+        }
+
+        private void SaveSession()
+        {
             if (!this.CheckActiveSessionExists())
             {
                 LoginDatetime = DateTime.Now;
@@ -90,6 +95,6 @@ namespace MTLServiceBot.Users
         }
 
         public override string ToString() =>
-            $"UserId: {User.Id}; Username: {User.Name}; ChatId: {ChatId}; SaveSession Datetime: {LoginDatetime}";
+            $"UserId: {User.Id}; Username: {User.Name}; ChatId: {ChatId}; SetSessionAuthorization Datetime: {LoginDatetime}";
     }
 }
