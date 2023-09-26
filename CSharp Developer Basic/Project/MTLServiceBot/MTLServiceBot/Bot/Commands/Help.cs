@@ -3,6 +3,7 @@ using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -22,7 +23,7 @@ namespace MTLServiceBot.Bot.Commands
                 + "*Список команд:*\r\n"
                 + _commandDescription;
 
-            await botClient.SendTextMessageAsync(message.Chat, helpMessage, null, ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(message.Chat, helpMessage, null, ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
         }
     }
 }

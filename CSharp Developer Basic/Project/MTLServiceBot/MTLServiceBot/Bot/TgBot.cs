@@ -21,7 +21,7 @@ namespace MTLServiceBot.Bot
 
         public void RunBot()
         {
-            Console.WriteLine("Запущен бот " + _bot.TgUser.FirstName); // TODO log
+            Program.ColoredPrint("Запущен бот " + _bot.TgUser.FirstName);
             var cts = new CancellationTokenSource();
 
             RegisterCommands();

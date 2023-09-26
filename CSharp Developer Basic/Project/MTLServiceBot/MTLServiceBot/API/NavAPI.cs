@@ -8,10 +8,6 @@ namespace MTLServiceBot.API
     internal class NavAPI
     {
         private static HttpClient? _httpClient;
-        public ApiResponseStatus ResponseStatus
-        {
-            get => GetApiResponseStatus();
-        }
         private HttpResponseMessage? _httpResponse;
         public string? _responseText;
 
@@ -28,7 +24,7 @@ namespace MTLServiceBot.API
         /// <param name="apiUrl">Адрес URL</param>
         /// <param name="content">Содержимое сообщения</param>
         /// <returns>Ответ от сервера MS Dynamics Nav</returns>
-        public async Task<ApiResponse> SendServiceApiRequest(string authHeader, HttpMethod method, string apiUrl, JsonContent? content = null)
+        public async Task<(ApiResponseStatus status, string responseText)> SendServiceApiRequest(string authHeader, HttpMethod method, string apiUrl, JsonContent? content = null)
         {
             _responseText = string.Empty;
             try
@@ -40,7 +36,7 @@ namespace MTLServiceBot.API
             {
                 Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
             }
-            return new ApiResponse(ResponseStatus, _responseText);
+            return (GetApiResponseStatus(), _responseText);
         }
 
         private async Task<HttpResponseMessage?> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, JsonContent? content)

@@ -1,9 +1,12 @@
 ﻿using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Users;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -16,16 +19,13 @@ namespace MTLServiceBot.Bot.Commands
         public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
         {
             var api = ServiceAPI.GetInstance();
-            var response = await api.GetServiceTasksList(session);
-            if (response.Status == ApiResponseStatus.Unauthorized)
+            var response = await api.GetServiceTasks(session);
+            if (!response.IsSuccess)
             {
-                if (!await base.ReAuthentication(botClient, message, session))
-                    return;
-                response = await api.GetServiceTasksList(session);
-            }
-            if (!await CheckIsValidResponse(response, botClient, message.Chat))
+                await botClient.SendTextMessageAsync(message.Chat, response.Message);
                 return;
-            
+            }
+
             List<ServiceTask>? serviceTasksList = new();
             try
             {
@@ -37,25 +37,39 @@ namespace MTLServiceBot.Bot.Commands
                 await botClient.SendTextMessageAsync(message.Chat, CaptionConstants.DeserializeJsonError);
                 return;
             }
+            if (serviceTasksList is null || serviceTasksList.Count == 0)
+            {
+                await botClient.SendTextMessageAsync(message.Chat, CaptionConstants.ServiceTasksListEmpty);
+                return;
+            }
+
+            await botClient.SendTextMessageAsync(message.Chat,
+                "Выберите сервисную заявку из списка",
+                replyMarkup: GetServiceTasksButtons(serviceTasksList));
+            //foreach(var task in serviceTasksList)
+            //{
+            //    await botClient.SendTextMessageAsync(message.Chat, task.ToString());
+            //}
+
+
         }
-        private async Task<bool> CheckIsValidResponse(ApiResponse response, ITelegramBotClient botClient, Chat chat)
+
+        private IReplyMarkup GetServiceTasksButtons(List<ServiceTask> tasks)
         {
-            if (response.Status == ApiResponseStatus.Unauthorized)
+            var rows = new List<KeyboardButton[]>();
+            var cols = new List<KeyboardButton>();
+            for (int i = 0; i < tasks.Count; i++)
             {
-                await botClient.SendTextMessageAsync(chat, CaptionConstants.UnauthorizedError);
-                return false;
+                var kb = new KeyboardButton($"/st\t{tasks[i]}");
+                cols.Add(kb);
+                if ((i + 1) % 2 != 0 && i != tasks.Count - 1)
+                    continue;
+                rows.Add(cols.ToArray());
+                cols = new List<KeyboardButton>();
             }
-            if (response.Status == ApiResponseStatus.Error)
-            {
-                await botClient.SendTextMessageAsync(chat, CaptionConstants.ServerConnectionError);
-                return false;
-            }
-            if (string.IsNullOrEmpty(response.ResponseText))
-            {
-                await botClient.SendTextMessageAsync(chat, CaptionConstants.ServiceTasksListEmpty);
-                return false;
-            }
-            return true;
+            var replyKB = new ReplyKeyboardMarkup(rows.ToArray());
+            replyKB.ResizeKeyboard = true;
+            return replyKB;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using MTLServiceBot.API;
-using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -33,7 +32,7 @@ namespace MTLServiceBot.Bot.Commands
         }
         public async Task HandleStartAuthentication(ITelegramBotClient botClient, Message message, Session session)
         {
-            await botClient.SendTextMessageAsync(message.Chat, "Введите ваше имя пользователя");
+            await botClient.SendTextMessageAsync(message.Chat, "Введите имя пользователя");
             session.AuthStep = AuthStep.Username;
         }
         public async Task HandleUserLoginInput(ITelegramBotClient botClient, Message message, Session session)
@@ -46,7 +45,7 @@ namespace MTLServiceBot.Bot.Commands
                 return;
             }
             session.User.Login = message.Text;
-            await botClient.SendTextMessageAsync(message.Chat, "Введите ваш пароль");
+            await botClient.SendTextMessageAsync(message.Chat, "Введите пароль");
             session.AuthStep = AuthStep.Password;
         }
         private async Task HandleUserPasswordInput(ITelegramBotClient botClient, Message message, Session session)
@@ -62,21 +61,9 @@ namespace MTLServiceBot.Bot.Commands
 
             var api = ServiceAPI.GetInstance();
             var response = await api.Authorize(session);
-            if (response.Status == ApiResponseStatus.Success && !string.IsNullOrEmpty(response.ResponseText))
-            {
-                session.SetSessionAuthorization(response.ResponseText);
-                await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default);
-                await botClient.SendTextMessageAsync(message.Chat, $"Добро пожаловать, {session.User.Name}! Вы успешно авторизованы");
-            }
-            else
-            {
-                if (response.Status == ApiResponseStatus.Unauthorized)
-                    await botClient.SendTextMessageAsync(message.Chat, "Вы ввели неправильный логин или пароль, попробуйте снова");
-                else
-                    await botClient.SendTextMessageAsync(message.Chat, "Ошибка соединения с сервером, попробуйте выполнить авторизацию позднее");
-            }
+            if (response.IsSuccess)
+                await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default); // Убираем из истории чата введенный пароль
+            await botClient.SendTextMessageAsync(message.Chat, $"Добро пожаловать, {session.User.Name}! Вы успешно авторизованы!");
         }
-
-
     }
 }

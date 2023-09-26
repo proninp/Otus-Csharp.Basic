@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace MTLServiceBot
+namespace MTLServiceBot.Assistants
 {
     public static class EncryptionHelper
     {

@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using System.Text;
 
@@ -10,7 +11,7 @@ namespace MTLServiceBot.SQL
         public static int GetActiveSessionsQty()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
-            var query = "SELECT COUNT(*) FROM [dbo].[Tg User Sessions] WHERE [EndSession Datetime] = '1753-01-01 00:00:00.000'";
+            var query = "SELECT COUNT(*) FROM [dbo].[Tg User Sessions] WHERE [Logout Datetime] = '1753-01-01 00:00:00.000'";
             return db.QueryFirstOrDefault<int>(query);
         }
         public static bool CheckActiveSessionExists(this Session userSession)
@@ -20,19 +21,19 @@ namespace MTLServiceBot.SQL
             query.Append("SELECT COUNT(*) FROM [dbo].[Tg User Sessions] WHERE");
             query.Append($" [User Id] = {userSession.User.Id}");
             query.Append($" AND [Chat Id] = {userSession.ChatId}");
-            query.Append(" AND [EndSession Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
             return db.QueryFirstOrDefault<int>(query.ToString()) > 0;
         }
         public static void GetActiveSessionCredentials(this Session userSession)
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = new StringBuilder();
-            query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [SetSessionAuthorization] login, [Password Cipher] password, [SetSessionAuthorization Datetime] loginDatetime");
+            query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [Login] login, [Password Cipher] password, [Login Datetime] loginDatetime");
             query.Append(" FROM [dbo].[Tg User Sessions]");
             query.Append($" WHERE [User Id] = {userSession.User.Id}");
             query.Append($" AND [Chat Id] = {userSession.ChatId}");
-            query.Append(" AND [EndSession Datetime] = '1753-01-01 00:00:00.000'");
-            query.Append(" ORDER BY [SetSessionAuthorization Datetime] DESC");
+            query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append(" ORDER BY [Login Datetime] DESC");
             var session = db.QueryFirstOrDefault<Session>(query.ToString());
             userSession.SetCredentials(session);
         }
@@ -40,9 +41,9 @@ namespace MTLServiceBot.SQL
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             StringBuilder query = new StringBuilder();
-            query.Append("SELECT [User Id] id, [Chat Id] chatId, [SetSessionAuthorization] login, [Password Cipher] password, [SetSessionAuthorization Datetime] loginDatetime");
+            query.Append("SELECT [User Id] id, [Chat Id] chatId, [Login] login, [Password Cipher] password, [Login Datetime] loginDatetime");
             query.Append(" FROM [dbo].[Tg User Sessions]");
-            query.Append(" WHERE [EndSession Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append(" WHERE [Logout Datetime] = '1753-01-01 00:00:00.000'");
             return db.Query<Session>(query.ToString()).ToList();
         }
         public static void Save(this Session userSession)
@@ -50,7 +51,7 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = new StringBuilder();
             query.Append("INSERT INTO[dbo].[Tg User Sessions]");
-            query.Append(" ([User Id], [Chat Id], [SetSessionAuthorization], [Password Cipher], [SetSessionAuthorization Datetime], [EndSession Datetime])");
+            query.Append(" ([User Id], [Chat Id], [Login], [Password Cipher], [Login Datetime], [Logout Datetime])");
             query.Append(" VALUES (@id, @chatId, @login, @password, @loginDatetime, @logoutDatetime)");
             db.Execute(query.ToString(), new
             {
@@ -69,8 +70,8 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             StringBuilder query = new StringBuilder();
             query.Append("UPDATE [dbo].[Tg User Sessions] SET");
-            query.Append($" [EndSession Datetime] = @logoutDatetime");
-            query.Append($" WHERE [User Id] = @id AND [Chat Id] = @chatId AND [EndSession Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append($" [Logout Datetime] = @logoutDatetime");
+            query.Append($" WHERE [User Id] = @id AND [Chat Id] = @chatId AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
             db.Execute(query.ToString(), new
             {
                 id = userSession.User.Id,

@@ -1,5 +1,7 @@
-﻿using MTLServiceBot.SQL;
+﻿using MTLServiceBot.Bot;
+using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
+using System.Net.Http.Json;
 
 namespace MTLServiceBot.API
 {
@@ -39,10 +41,52 @@ namespace MTLServiceBot.API
             return _instance;
         }
 
-        public async Task<ApiResponse> Authorize(Session session) =>
-            await _api.SendServiceApiRequest(session.User.GetAuthUserPasswordValue(), HttpMethod.Post, _authApiUrl);
+        public async Task<ApiResponse> Authorize(Session session)
+        {
+            ApiResponse authResponse;
+            var apiResponse = await _api.SendServiceApiRequest(
+                session.User.GetAuthUserPasswordValue(),
+                HttpMethod.Post,
+                _authApiUrl);
+            
+            if (apiResponse.status == ApiResponseStatus.Success && !string.IsNullOrEmpty(apiResponse.responseText))
+            {
+                session.SetSessionAuthorization(apiResponse.responseText);
+                authResponse = new ApiResponse(apiResponse.status, apiResponse.responseText);
+            }
+            else
+                authResponse = new ApiResponse(apiResponse.status, apiResponse.responseText);
+            return authResponse;
+        }
 
-        public async Task<ApiResponse> GetServiceTasksList(Session session) =>
-            await _api.SendServiceApiRequest(session.User.GetAuthTokenValue(), HttpMethod.Get, _serviceTasksApiUrl);
+        public async Task<ApiResponse> GetServiceTasks(Session session)
+            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);
+
+        private async Task<ApiResponse> SendServiceRequest(
+            Func<string, HttpMethod, string, JsonContent?, Task<(ApiResponseStatus status, string responseText)>> request,
+            Session session,
+            HttpMethod httpMethod,
+            string apiUrl,
+            JsonContent? content = null)
+        {
+            ApiResponse authResponse;
+            // Если после перезапуска приложения для сохраненной сессии еще не был получен новый токен
+            if (string.IsNullOrEmpty(session.User.AuthToken))
+            {
+                authResponse = await Authorize(session);
+                if (!authResponse.IsSuccess)
+                    return authResponse;
+            }
+            var apiResponse = await request(session.User.GetAuthByTokenValue(), httpMethod, apiUrl, content);
+            if (apiResponse.status == ApiResponseStatus.Unauthorized) // Обновляем токен, если истек срок действия
+            {
+                authResponse = await Authorize(session);
+                if (!authResponse.IsSuccess)
+                    return authResponse;
+                // Если повторная авторизация прошла успешно, то заново выполняем запрос списка сервисных обращений
+                apiResponse = await request(session.User.GetAuthByTokenValue(), httpMethod, apiUrl, content);
+            }
+            return new ApiResponse(apiResponse.status, apiResponse.responseText);
+        }
     }
 }

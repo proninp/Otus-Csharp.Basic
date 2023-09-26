@@ -17,7 +17,7 @@ namespace MTLServiceBot.Bot
 
         public TgUpdateHandler()
         {
-            _login = new Login(CaptionConstants.LogoutCaption, CaptionConstants.LoginDescription, false);
+            _login = new Login(CaptionConstants.LoginCaption, CaptionConstants.LoginDescription, false);
             _unknownCommand = new Unknown(CaptionConstants.UnknownCaption, CaptionConstants.UnknownDescription, false);
             _commands = new List<Command>()
             {
@@ -33,7 +33,7 @@ namespace MTLServiceBot.Bot
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (!CheckUpdateRefferenceValid(update))
+            if (!await CheckUpdateRefferenceValid(botClient, update))
                 return;
             var message = update.Message;
             var commandText = message?.Text ?? "";
@@ -53,21 +53,30 @@ namespace MTLServiceBot.Bot
                 Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message), ConsoleColor.Red); // TODO Logging
             }
         }
-        private bool CheckUpdateRefferenceValid(Update? update)
+        private async Task<bool> CheckUpdateRefferenceValid(ITelegramBotClient botClient, Update? update)
         {
-            if (update?.Type != UpdateType.Message)
+            if (update == null)
             {
-                Console.WriteLine($"Я еще не умею обрабатывать тип {update.Type}");
+                Program.ColoredPrint($"Нераспознано полученное обновление", ConsoleColor.Red); // TODO Logging
+                return false;
+            }
+
+            if (update.Type != UpdateType.Message)
+            {
+                if (update.Message != null)
+                    await botClient.SendTextMessageAsync(update.Message.Chat, $"Я еще не умею обрабатывать сообщения с типом {update.Type}", parseMode: ParseMode.Markdown);
+                Program.ColoredPrint($"Получен запрос с типом {update?.Type} для которого не предусмотрено обработчика", ConsoleColor.Red);
                 return false;
             }
             if (update.Message is null)
             {
-                Console.WriteLine($"Нераспознано сообщение {update.Id}");
+                Program.ColoredPrint($"Нераспознано сообщение {update.Id}", ConsoleColor.Red);
                 return false;
             }
+
             if (update.Message.From == null)
             {
-                Console.WriteLine($"Нераспознан пользователь в сообщении {update.Id}");
+                Program.ColoredPrint($"Нераспознан пользователь в сообщении {update.Id}", ConsoleColor.Red);
                 return false;
             }
             return true;

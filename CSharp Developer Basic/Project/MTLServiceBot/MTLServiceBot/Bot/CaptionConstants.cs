@@ -24,7 +24,7 @@
         public const string UnknownDescription = "/Оповещает о неизвестной команде";
 
         public const string ServerConnectionError = "Ошибка соединения с сервером, выполните запрос позднее";
-        public const string UnauthorizedError = $"Ошибка авторизации при выполнении запроса, выполните команду {LoginCaption} и попробуйте снова";
+        public const string UnauthorizedError = $"Ошибка выполнения запроса - некорректные данные для авторизации";
         public const string DeserializeJsonError = "Ошибка преобразования результатов выполения запроса, выполните запрос позденне";
 
         public const string ServiceTasksListEmpty = "В системе не найдено доступных для вывода сервисных запросов";

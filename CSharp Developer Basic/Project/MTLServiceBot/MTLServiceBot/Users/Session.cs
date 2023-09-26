@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.SQL;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.SQL;
 
 namespace MTLServiceBot.Users
 {
@@ -9,15 +10,6 @@ namespace MTLServiceBot.Users
         public AuthStep AuthStep { get; set; }
         private bool _isAuthorized;
         public bool IsAuthorized { get => CheckAuthorization(); }
-        private string _authToken;
-        public string AuthToken
-        {
-            set
-            {
-                if (value?.Length > 0)
-                    _authToken = value;
-            }
-        }
         public DateTime LoginDatetime { get; set; }
         public DateTime LogoutDatetime { get; set; }
 
@@ -40,7 +32,6 @@ namespace MTLServiceBot.Users
             ChatId = chatId;
             LoginDatetime = loginDatetime;
             AuthStep = AuthStep.None;
-            _authToken = "";
         }
 
         private DateTime GetZeroDateTime() => DateTime.Parse("1753-01-01");
@@ -72,7 +63,7 @@ namespace MTLServiceBot.Users
         public void SetSessionAuthorization(string apiToken)
         {
             _isAuthorized = true;
-            _authToken = apiToken;
+            User.AuthToken = apiToken;
             SaveSession();
         }
 

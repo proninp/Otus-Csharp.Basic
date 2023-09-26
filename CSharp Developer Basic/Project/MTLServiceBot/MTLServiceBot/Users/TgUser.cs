@@ -20,7 +20,7 @@ namespace MTLServiceBot.Users
         
         public string GetAuthUserPasswordValue() => GetAuthValue($"{Login}:{Password}");
 
-        public string GetAuthTokenValue() => GetAuthValue($"{Login}:{AuthToken}");
+        public string GetAuthByTokenValue() => GetAuthValue($"{Login}:{AuthToken}");
 
         private string GetAuthValue(string credentials)
         {
