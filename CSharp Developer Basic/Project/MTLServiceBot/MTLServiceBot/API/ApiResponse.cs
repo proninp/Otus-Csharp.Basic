@@ -29,9 +29,9 @@ namespace MTLServiceBot.API
             if (_status == ApiResponseStatus.Success)
                 return "";
             else if (_status == ApiResponseStatus.Unauthorized)
-                return CaptionConstants.UnauthorizedError;
+                return TextConsts.UnauthorizedError;
             else
-                return CaptionConstants.ServerConnectionError;
+                return TextConsts.ServerConnectionError;
         }
     }
 }

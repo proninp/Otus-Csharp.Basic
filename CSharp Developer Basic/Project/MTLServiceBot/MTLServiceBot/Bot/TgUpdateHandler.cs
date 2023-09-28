@@ -12,25 +12,31 @@ namespace MTLServiceBot.Bot
         private readonly string _commandLogTemplate = "Команда {0}, исключение: {1}";
         private readonly Command _unknownCommand;
         private readonly Command _login;
+        private readonly Command _logout;
+        private readonly Command _serviceTasksRequest;
         private readonly List<Command> _commands;
         public List<Command> Commands { get => _commands; }
 
         public TgUpdateHandler()
         {
-            _login = new Login(CaptionConstants.LoginCaption, CaptionConstants.LoginDescription, false);
-            _unknownCommand = new Unknown(CaptionConstants.UnknownCaption, CaptionConstants.UnknownDescription, false);
+            _login = new Login(TextConsts.LoginCommandName, TextConsts.LoginCommandDescription, false);
+            _logout = new Logout(TextConsts.LogoutCommandName, TextConsts.LogoutCommandDescription, true);
+            _serviceTasksRequest = new SerciceTasksRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
+            _unknownCommand = new Unknown(TextConsts.UnknownCommandName, TextConsts.UnknownCommandDescription, false);
             _commands = new List<Command>()
             {
-                new Start(CaptionConstants.StartCaption, CaptionConstants.StartDescription, false),
+                new Start(TextConsts.StartCommandName, TextConsts.StartCommandDescription, false),
                 _login,
-                new Logout(CaptionConstants.LogoutCaption, CaptionConstants.LogoutDescription, true),
-                new GetServiceTasks(CaptionConstants.ServiceTasksCaption, CaptionConstants.ServiceDescription, true),
-                new Stop(CaptionConstants.StopCaption, CaptionConstants.StopDescription, false)
+                _logout,
+                _serviceTasksRequest,
+                new Stop(TextConsts.StopCommandName, TextConsts.StopCommandDescription, false)
             };
 
-            _commands.Add(new Help(CaptionConstants.HelpCaption, CaptionConstants.HelpDescription, false, _commands.Select(c => (c.Name, c.Description))));
+            var helpCommadInfo = _commands.Select(c => (c.Name, c.Description));
+            _commands.Add(new Help(TextConsts.HelpCommandName, TextConsts.HelpCommandDescription, false, helpCommadInfo));
             _commands.Add(_unknownCommand);
         }
+        
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             if (!await CheckUpdateRefferenceValid(botClient, update))
@@ -53,6 +59,7 @@ namespace MTLServiceBot.Bot
                 Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message), ConsoleColor.Red); // TODO Logging
             }
         }
+        
         private async Task<bool> CheckUpdateRefferenceValid(ITelegramBotClient botClient, Update? update)
         {
             if (update == null)
@@ -108,10 +115,15 @@ namespace MTLServiceBot.Bot
         private Command GetCommand(Session session, string commandText)
         {
             Command command;
-            if (session.AuthStep is not AuthStep.None)
-                command = _login;
+            
+            command = _commands.Find(c => c.Name == commandText) ?? _unknownCommand;
+            if (command.GetType().Equals(_unknownCommand.GetType()))
+            {
+                if (_commands.Any(c => c.WorkflowMode)) // Если неизвестная команда, то это может быть workflow активной команды
+                    command = _commands.First(c => c.WorkflowMode);
+            }
             else
-                command = _commands.Find(cmd => cmd.Name == commandText) ?? _unknownCommand;
+                _commands.ForEach(cmd => cmd.WorkflowMode = false); // Если пришла новая команда, то сбрасываем все Workflow
             return command;
         }
     }

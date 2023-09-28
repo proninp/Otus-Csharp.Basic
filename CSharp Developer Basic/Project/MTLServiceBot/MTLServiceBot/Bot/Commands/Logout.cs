@@ -2,6 +2,7 @@
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -15,11 +16,16 @@ namespace MTLServiceBot.Bot.Commands
         {
             if (!session.IsAuthorized)
             {
-                await botClient.SendTextMessageAsync(message.Chat, "Вы не авторизованы в системе, выполнение команды невозможно", null, ParseMode.Markdown);
+                await botClient.SendTextMessageAsync(message.Chat,
+                    TextConsts.LogoutUnathorizedMsg,
+                    parseMode: ParseMode.Markdown);
                 return;
             }
             session.EndSession();
-            await botClient.SendTextMessageAsync(message.Chat, $"{session.User.Name}, ваша сессия успешно завершена", null, ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(message.Chat,
+                string.Format(TextConsts.LogoutSuccessMsg, session.User.Name), 
+                parseMode: ParseMode.Markdown,
+                replyMarkup: new ReplyKeyboardRemove());
         }
     }
 }

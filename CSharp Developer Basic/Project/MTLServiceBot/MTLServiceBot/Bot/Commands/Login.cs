@@ -3,6 +3,7 @@ using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -14,7 +15,10 @@ namespace MTLServiceBot.Bot.Commands
         {
             if (session.IsAuthorized)
             {
-                await botClient.SendTextMessageAsync(message.Chat, $"Вы уже авторизованы, как {session.User.Login}.", null, ParseMode.Markdown);
+                await botClient.SendTextMessageAsync(message.Chat,
+                    string.Format(TextConsts.LoginAlreadyAuthorizedMsg, session.User.Login),
+                    parseMode: ParseMode.Markdown,
+                    replyMarkup: new ReplyKeyboardRemove());
                 return;
             }
             switch (session.AuthStep)
@@ -29,6 +33,7 @@ namespace MTLServiceBot.Bot.Commands
                     await HandleUserPasswordInput(botClient, message, session);
                     break;
             }
+            WorkflowMode = session.AuthStep != AuthStep.None;
         }
         public async Task HandleStartAuthentication(ITelegramBotClient botClient, Message message, Session session)
         {

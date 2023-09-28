@@ -14,7 +14,7 @@ namespace MTLServiceBot.Bot.Commands
         public override async Task Handle(ITelegramBotClient botClient, Message message, Session userSession)
         {
             await botClient.SendTextMessageAsync(message.Chat,
-                "Извините, команда не распознана.\nДля получения списка команд введите /help",
+                TextConsts.UnknownCommandMsg,
                 replyMarkup: new ReplyKeyboardRemove());
         }
     }

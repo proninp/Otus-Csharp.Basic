@@ -1,9 +1,7 @@
 ﻿using MTLServiceBot.Users;
-using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types;
 using Telegram.Bot;
-using Azure;
-using MTLServiceBot.API;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -12,6 +10,7 @@ namespace MTLServiceBot.Bot.Commands
         private readonly string _name;
         private readonly string _description;
         private readonly bool _isRequireAuthentication;
+        public bool WorkflowMode { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public string Name { get => _name; }
         public string Description { get => _description; }
         public bool IsRequireAuthentication { get => _isRequireAuthentication; }
@@ -28,7 +27,7 @@ namespace MTLServiceBot.Bot.Commands
 
             var unauthMessage = $"Для выполнения команды {Name} требуется авторизация.";
             await botClient.SendTextMessageAsync(message.Chat, unauthMessage, null, ParseMode.Markdown);
-            
+
             return false;
         }
 
