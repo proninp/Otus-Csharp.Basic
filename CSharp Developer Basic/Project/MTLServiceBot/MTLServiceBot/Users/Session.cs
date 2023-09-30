@@ -1,34 +1,30 @@
 ﻿using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
+using Telegram.Bot.Types;
 
 namespace MTLServiceBot.Users
 {
     public class Session
     {
         public TgUser User { get; set; }
-        public long ChatId { get; set; }
+        public long ChatId { get; init; }
         public AuthStep AuthStep { get; set; }
         private bool _isAuthorized;
         public bool IsAuthorized { get => CheckAuthorization(); }
         public DateTime LoginDatetime { get; set; }
         public DateTime LogoutDatetime { get; set; }
 
-
         public Session(long id, long chatId, string? username, DateTime loginDatetime, DateTime logoutDatetime)
-            : this(id, chatId, username, "", "", loginDatetime)
+            : this(id, chatId, "", "", loginDatetime)
         {
+            User.Name = username ?? "";
+            
             LogoutDatetime = logoutDatetime;
         }
 
-        public Session(long id, long chatId, string login, string password, DateTime loginDatetime) :
-            this(id, chatId, "", login, password, loginDatetime)
+        public Session(long id, long chatId, string login, string password, DateTime loginDatetime)
         {
-
-        }
-
-        private Session(long id, long chatId, string? username, string login, string password, DateTime loginDatetime)
-        {
-            User = new TgUser(id, username, login, password);
+            User = new TgUser(id, login, password);
             ChatId = chatId;
             LoginDatetime = loginDatetime;
             AuthStep = AuthStep.None;

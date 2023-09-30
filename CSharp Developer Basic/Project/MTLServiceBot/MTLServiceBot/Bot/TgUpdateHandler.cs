@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Bot.Commands;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Bot.Commands;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -8,7 +9,7 @@ namespace MTLServiceBot.Bot
 {
     public class TgUpdateHandler
     {
-        private static Dictionary<long, Session> userSessions = new Dictionary<long, Session>();
+        private static Dictionary<long, Session> _userSessions = new Dictionary<long, Session>();
         private readonly string _commandLogTemplate = "Команда {0}, исключение: {1}";
         private readonly Command _unknownCommand;
         private readonly Command _login;
@@ -36,57 +37,48 @@ namespace MTLServiceBot.Bot
             _commands.Add(new Help(TextConsts.HelpCommandName, TextConsts.HelpCommandDescription, false, helpCommadInfo));
             _commands.Add(_unknownCommand);
         }
-        
+
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (!await CheckUpdateRefferenceValid(botClient, update))
+            var message = update.Message ?? update.CallbackQuery?.Message;
+            var from = update.Message?.From ?? update.CallbackQuery?.From;
+
+            var updateValidator = CheckUpdateValid(update, message, from);
+            if (!updateValidator.isValid)
+            {
+                SendWarning(botClient, message, updateValidator.errorMsg);
                 return;
-            var message = update.Message;
-            var commandText = message?.Text ?? "";
+            }    
 
-            Program.ColoredPrint($"Получена команда [{commandText}] в чате [{message.Chat.Id}] от: [{message.From.Id}]", ConsoleColor.Green); // TODO Logging
+            var commandText = message!.Text ?? "";
+            Program.ColoredPrint(string.Format(TextConsts.NewUpdateLogMsg, update.Type.ToString(), message?.Chat.Id, from?.Id, message?.Text));
 
-            Session session = GetUserSession(message);
-            Command command = GetCommand(session, commandText);
+            Session session = GetUserSession(message!);
+            Command command = GetCommand(commandText);
+
             try
             {
-                var isAuthorized = await command.CheckAuthentication(botClient, message, session);
-                if (isAuthorized)
-                    await command.Handle(botClient, message, session);
+                if(await command.CheckAuthorization(botClient, message!, session))
+                    await command.Handle(botClient, message!, session);
             }
             catch (Exception e)
             {
-                Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message), ConsoleColor.Red); // TODO Logging
+                Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message),
+                    ConsoleColor.Red); // TODO Logging
             }
         }
-        
-        private async Task<bool> CheckUpdateRefferenceValid(ITelegramBotClient botClient, Update? update)
+
+        private (bool isValid, string errorMsg) CheckUpdateValid(Update update, Message? message, User? from)
         {
-            if (update == null)
-            {
-                Program.ColoredPrint($"Нераспознано полученное обновление", ConsoleColor.Red); // TODO Logging
-                return false;
-            }
+            if (update.Type is not (UpdateType.Message or UpdateType.CallbackQuery))
+                return (false, string.Format(TextConsts.ReceivedUpdateTypeUnknownLogMsg, update.Type));
+            
+            if (message is null)
+                return (false, string.Format(TextConsts.ReceivedUpdateTypeDataUnknown, update.Id));
 
-            if (update.Type != UpdateType.Message)
-            {
-                if (update.Message != null)
-                    await botClient.SendTextMessageAsync(update.Message.Chat, $"Я еще не умею обрабатывать сообщения с типом {update.Type}", parseMode: ParseMode.Markdown);
-                Program.ColoredPrint($"Получен запрос с типом {update?.Type} для которого не предусмотрено обработчика", ConsoleColor.Red);
-                return false;
-            }
-            if (update.Message is null)
-            {
-                Program.ColoredPrint($"Нераспознано сообщение {update.Id}", ConsoleColor.Red);
-                return false;
-            }
-
-            if (update.Message.From == null)
-            {
-                Program.ColoredPrint($"Нераспознан пользователь в сообщении {update.Id}", ConsoleColor.Red);
-                return false;
-            }
-            return true;
+            if (from is null)
+                return (false, string.Format(TextConsts.ReceivedUpdateFromUnknownMsg, update.Id));
+            return (true, "");
         }
 
         private Session GetUserSession(Message message)
@@ -94,17 +86,15 @@ namespace MTLServiceBot.Bot
             Session userSession;
             var userId = message.From.Id;
             TgUser? user = null;
-            if (userSessions.ContainsKey(userId))
-            {
-                userSession = userSessions[userId];
-                user = userSession.User;
-            }
+            if (_userSessions.ContainsKey(userId))
+                userSession = _userSessions[userId];
             else
             {
                 userSession = new Session(userId, message.Chat.Id, message.From.Username, DateTime.Now, DateTime.Parse("1753-01-01"));
-                userSessions.Add(userId, userSession);
+                _userSessions.Add(userId, userSession);
             }
-            if (user == null)
+            user = userSession.User;
+            if (user is null)
             {
                 user = new TgUser(userId, message.From.Username);
                 userSession.User = user;
@@ -112,10 +102,9 @@ namespace MTLServiceBot.Bot
             return userSession;
         }
 
-        private Command GetCommand(Session session, string commandText)
+        private Command GetCommand(string commandText)
         {
             Command command;
-            
             command = _commands.Find(c => c.Name == commandText) ?? _unknownCommand;
             if (command.GetType().Equals(_unknownCommand.GetType()))
             {
@@ -125,6 +114,13 @@ namespace MTLServiceBot.Bot
             else
                 _commands.ForEach(cmd => cmd.WorkflowMode = false); // Если пришла новая команда, то сбрасываем все Workflow
             return command;
+        }
+
+        private void SendWarning(ITelegramBotClient botClient, Message? msg, string warningText)
+        {
+            Program.ColoredPrint(warningText, ConsoleColor.Red); // TODO Log
+            if (msg is not null && msg.Chat is not null)
+                botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown);
         }
     }
 }

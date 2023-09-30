@@ -1,4 +1,4 @@
-﻿using MTLServiceBot.Bot;
+﻿using MTLServiceBot.Assistants;
 using Telegram.Bot.Types;
 
 namespace MTLServiceBot.API

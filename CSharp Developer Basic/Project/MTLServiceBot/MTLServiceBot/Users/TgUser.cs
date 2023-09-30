@@ -6,18 +6,23 @@ namespace MTLServiceBot.Users
     public class TgUser
     {
         public long Id { get; }
-        public string Name { get; init; }
+        public string? Name { get; set; }
         public string? Login { get; set; }
         public string? Password { get; set; }
         public string? AuthToken { get; set; }
-        public TgUser(long id, string? name = "", string login = "", string password = "")
+        
+        public TgUser(long id, string? name): this(id)
+        {
+            Name = name ?? "";
+        }
+
+        public TgUser(long id, string login = "", string password = "")
         {
             Id = id;
-            Name = name ?? "";
             Login = login;
             Password = password;
         }
-        
+
         public string GetAuthUserPasswordValue() => GetAuthValue($"{Login}:{Password}");
 
         public string GetAuthByTokenValue() => GetAuthValue($"{Login}:{AuthToken}");

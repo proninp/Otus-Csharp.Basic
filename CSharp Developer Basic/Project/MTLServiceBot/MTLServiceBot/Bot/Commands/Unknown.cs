@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Users;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;

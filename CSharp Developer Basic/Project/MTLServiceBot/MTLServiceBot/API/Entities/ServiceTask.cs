@@ -21,7 +21,7 @@ namespace MTLServiceBot.API.Entities
         public string RequestNo { get; set; } = "";
         [JsonPropertyName("Task_No")]
         public string TaskNo { get; set; } = "";
-        [JsonPropertyName("Status")]
+        [JsonPropertyName("StatusML")]
         public string Status { get; set; } = "";
         [JsonPropertyName("Executor")]
         public string Executor { get; set; } = "";
@@ -71,7 +71,7 @@ namespace MTLServiceBot.API.Entities
         }
 
         public string ToMarkedDownString()
-        {
+        {   
             var sb = new StringBuilder();
             AppendMarkDownParameterLine(sb, "Запрос", RequestNo);
             AppendMarkDownParameterLine(sb, "Задача", TaskNo);
@@ -79,9 +79,9 @@ namespace MTLServiceBot.API.Entities
             AppendMarkDownParameterLine(sb, "Исполнитель", Executor);
             AppendMarkDownParameterLine(sb, "Наименование", Name);
             AppendMarkDownParameterLine(sb, "Адрес", Address);
-            AppendMarkDownParameterLine(sb, "Заказ Но.", OrderNo);
+            AppendMarkDownParameterLine(sb, "Заказ", OrderNo);
             AppendMarkDownParameterLine(sb, "Оборудование", Equipment);
-            AppendMarkDownParameterLine(sb, "Серийный Но.", SerialNumber);
+            AppendMarkDownParameterLine(sb, "Серийный Номер", SerialNumber);
             AppendMarkDownParameterLine(sb, "Описание", ServiceRequestDescription);
             return sb.ToString();
         }
@@ -96,7 +96,7 @@ namespace MTLServiceBot.API.Entities
         private void AppendMarkDownParameterLine(StringBuilder sb, string name, string value)
         {
             if (!string.IsNullOrEmpty(value))
-                sb.AppendLine($"**{name}:**\t\t{value.PrepareMarkDown()}");
+                sb.AppendLine($"<code>{name}:</code> {value}");
         }
 
         private void WriteProperty(JsonWriter writer, string name, string value)

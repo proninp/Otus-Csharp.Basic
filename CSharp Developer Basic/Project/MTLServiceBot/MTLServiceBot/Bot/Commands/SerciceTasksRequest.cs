@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
+using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using System.Text.Json;
 using Telegram.Bot;
@@ -11,7 +12,7 @@ namespace MTLServiceBot.Bot.Commands
 {
     public class SerciceTasksRequest : Command
     {
-        public SerciceTasksRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
+        public SerciceTasksRequest(string name, string description, bool isRequireAuthentication): base(name, description, isRequireAuthentication)
         {
         }
 
@@ -60,7 +61,9 @@ namespace MTLServiceBot.Bot.Commands
             var numberFormat = GetNumberRequestParts(message.Text);
             if (!numberFormat.isValidNumberFormat)
             {
-                await botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat, parseMode: ParseMode.Markdown);
+                await botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat,
+                    parseMode: ParseMode.Html,
+                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
                 return;
             }
             var requestNo = numberFormat.numberParts[0];
@@ -69,12 +72,16 @@ namespace MTLServiceBot.Bot.Commands
             {
                 await botClient.SendTextMessageAsync(message.Chat,
                     string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
-                    parseMode: ParseMode.Markdown);
+                    parseMode: ParseMode.Html,
+                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
                 return;
             }
+
+            var serviceTaskInfo = serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)).ToMarkedDownString();
             await botClient.SendTextMessageAsync(message.Chat,
-                    serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)).ToMarkedDownString(),
-                    parseMode: ParseMode.Markdown);
+                    serviceTaskInfo,
+                    parseMode: ParseMode.Html,
+                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
         }
 
         private (bool isValidNumberFormat, List<string> numberParts) GetNumberRequestParts(string message)

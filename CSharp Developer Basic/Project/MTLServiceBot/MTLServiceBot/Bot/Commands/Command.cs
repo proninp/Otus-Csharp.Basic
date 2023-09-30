@@ -20,7 +20,8 @@ namespace MTLServiceBot.Bot.Commands
             _description = description;
             _isRequireAuthentication = isRequireAuthentication;
         }
-        public async Task<bool> CheckAuthentication(ITelegramBotClient botClient, Message message, Session session)
+        
+        public async Task<bool> CheckAuthorization(ITelegramBotClient botClient, Message message, Session session)
         {
             if (!IsRequireAuthentication || session.IsAuthorized)
                 return true;

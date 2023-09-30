@@ -16,7 +16,7 @@ namespace MTLServiceBot.Bot.Commands
             _commandDescription = string.Join("\r\n", commandsInfo.Select(cmd => $"{cmd.Name} - {cmd.Description}"));
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
         {
             var helpMessage = "*Инструкция по работе с ботом*\r\n\r\n"
                 + "*Список команд:*\r\n"

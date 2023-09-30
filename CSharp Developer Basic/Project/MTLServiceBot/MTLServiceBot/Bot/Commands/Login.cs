@@ -1,4 +1,5 @@
 ﻿using MTLServiceBot.API;
+using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -68,7 +69,7 @@ namespace MTLServiceBot.Bot.Commands
             var response = await api.Authorize(session);
             if (response.IsSuccess)
                 await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default); // Убираем из истории чата введенный пароль
-            await botClient.SendTextMessageAsync(message.Chat, $"Добро пожаловать, {session.User.Name}! Вы успешно авторизованы!");
+            await botClient.SendTextMessageAsync(message.Chat, response.Message);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Bot;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Bot;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Net.Http.Json;
@@ -52,7 +53,9 @@ namespace MTLServiceBot.API
             if (apiResponse.status == ApiResponseStatus.Success && !string.IsNullOrEmpty(apiResponse.responseText))
             {
                 session.SetSessionAuthorization(apiResponse.responseText);
-                authResponse = new ApiResponse(apiResponse.status, apiResponse.responseText);
+                authResponse = new ApiResponse(apiResponse.status,
+                    apiResponse.responseText,
+                    string.Format(TextConsts.LoginSuccessMsg, session.User.Name));
             }
             else
                 authResponse = new ApiResponse(apiResponse.status, apiResponse.responseText);
