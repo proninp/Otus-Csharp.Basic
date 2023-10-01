@@ -13,7 +13,7 @@ create table public."Products" (
 	"ID" serial4 not null
 	, "Name" varchar(100)
 	, "Description" varchar(200)
-	, "StockQuantity" int2
+	, "StockQuantity" int4
 	, "Price" decimal
 	, constraint "Products_pkey" primary key ("ID")
 );
