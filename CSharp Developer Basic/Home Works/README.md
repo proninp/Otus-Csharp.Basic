@@ -16,3 +16,4 @@
 * [13 LINQ операторы](/CSharp%20Developer%20Basic/Home%20Works/39.%20HomeWork13)
 * [14 Выборки данных](/CSharp%20Developer%20Basic/Home%20Works/43.%20HomeWork14)
 * [15 Индексы: кластерный и не кластерный](/CSharp%20Developer%20Basic/Home%20Works/45.%20HomeWork15)
+* [16 Dapper / Linq2sql](/CSharp%20Developer%20Basic/Home%20Works/46.%20HomeWork16)
