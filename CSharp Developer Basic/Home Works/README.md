@@ -14,3 +14,5 @@
 * [11 Основные коллекции: очередь, стек, словарь, хешсет](/CSharp%20Developer%20Basic/Home%20Works/35.%20HomeWork11)
 * [12 Observable, Immutable и Concurrent коллекции](/CSharp%20Developer%20Basic/Home%20Works/37.%20HomeWork12)
 * [13 LINQ операторы](/CSharp%20Developer%20Basic/Home%20Works/39.%20HomeWork13)
+* [14 Выборки данных](/CSharp%20Developer%20Basic/Home%20Works/43.%20HomeWork14)
+* [15 Индексы: кластерный и не кластерный](/CSharp%20Developer%20Basic/Home%20Works/45.%20HomeWork15)
