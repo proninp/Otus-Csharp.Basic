@@ -31,6 +31,7 @@
         public const string ReceivedUpdateFromUnknownMsg = "Нераспознан пользователь в сообщении {0}";
         public const string ReceivedUpdateTypeDataUnknown = "Нераспознан объект данных сообщения {0}";
         public const string NewUpdateLogMsg = "Получена команда c типом [{0}] в чате [{1}] от: [{2}]. Текст: [{3}]";
+        public const string CommandExceptionLogTemplate = "Команда {0}, исключение: {1}";
 
         public const string LoginAlreadyAuthorizedMsg = "Вы уже авторизованы, как {0}.";
 

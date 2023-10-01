@@ -10,7 +10,6 @@ namespace MTLServiceBot.Bot
     public class TgUpdateHandler
     {
         private static Dictionary<long, Session> _userSessions = new Dictionary<long, Session>();
-        private readonly string _commandLogTemplate = "Команда {0}, исключение: {1}";
         private readonly Command _unknownCommand;
         private readonly Command _login;
         private readonly Command _logout;
@@ -63,7 +62,7 @@ namespace MTLServiceBot.Bot
             }
             catch (Exception e)
             {
-                Program.ColoredPrint(string.Format(_commandLogTemplate, commandText, e.Message),
+                Program.ColoredPrint(string.Format(TextConsts.CommandExceptionLogTemplate, commandText, e.Message),
                     ConsoleColor.Red); // TODO Logging
             }
         }

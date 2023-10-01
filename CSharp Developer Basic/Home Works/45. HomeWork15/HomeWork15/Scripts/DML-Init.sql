@@ -1,0 +1,46 @@
+insert into "Customers" ("ID", "FirstName", "LastName", "Age")
+values (1, 'Александр', 'Друзь', 68),
+       (2, 'Максим', 'Поташев', 54),
+       (3, 'Виктор', 'Сиднев', 68),
+       (4, 'Андрей', 'Козлов', 62),
+       (5, 'Дмитрий', 'Авдеенко', 46),
+       (6, 'Алесь', 'Мухин', 47),
+       (7, 'Михаил', 'Мун', 48),
+       (8, 'Михаил', 'Скипский', 44),
+       (9, 'Алексей', 'Капустин', 65),
+       (10, 'Юлия', 'Лазарева', 40);
+
+insert into "Products" ("ID", "Name", "Description", "StockQuantity", "Price")
+values (1,  'PC1',      'PC1 Description',      20, 600.0),
+       (2,  'Printer1', 'Printer1 Description', 15, 90.0),
+       (3,  'Laptop1',  'Laptop1 Description',  5,  800.0),
+       (4,  'PC2',      'PC2 Description',      15, 750.0),
+       (5,  'Printer2', 'Printer2 Description', 10, 110.0),
+       (6,  'Laptop2',  'Laptop2 Description',  10, 1000.0),
+       (7,  'PC3',      'PC3 Description',      10, 900.0),
+       (8,  'Printer3', 'Printer3 Description', 5,  250.0),
+       (9,  'Laptop3',  'Laptop3 Description',  5,  1200.0),
+       (10, 'PC4',      'PC4 Description',      20, 1000.0),
+       (11, 'Printer4', 'Printer4 Description', 25, 100.0),
+       (12, 'Laptop4',  'Laptop4 Description',  10, 950.0);
+
+insert into "Orders" ("ID", "CustomerID", "ProductID", "Quantity")
+values (1,  1,  1,  1),
+       (2,  6,  5,  1),
+       (3,  8,  4,  2),
+       (4,  3,  3,  3),
+       (5,  5,  2,  4),
+       (6,  3,  9,  2),
+       (7,  4,  7,  1),
+       (9,  5,  11, 2),
+       (10, 8,  10, 4),
+       (11, 9,  1,  2),
+       (12, 10, 2,  1),
+       (13, 7,  5,  1),
+       (14, 6,  4,  2),
+       (15, 8,  6,  3),
+       (16, 3,  5,  2),
+       (17, 2,  8,  2),
+       (18, 3,  8,  3),
+       (19, 2,  10, 1),
+       (20, 4,  12, 1);
