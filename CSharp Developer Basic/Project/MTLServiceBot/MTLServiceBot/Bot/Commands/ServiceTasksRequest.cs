@@ -10,19 +10,21 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public class SerciceTasksRequest : Command
+    public partial class ServiceTasksRequest : Command
     {
-        public SerciceTasksRequest(string name, string description, bool isRequireAuthentication): base(name, description, isRequireAuthentication)
+        public ServiceTasksRequest(string name, string description, bool isRequireAuthentication): base(name, description, isRequireAuthentication)
         {
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
+            var message = update.Message!;
             var api = ServiceAPI.GetInstance();
+            
             var response = await api.GetServiceTasks(session);
             if (!response.IsSuccess)
             {
-                await botClient.SendTextMessageAsync(message.Chat, response.Message);
+                _ = botClient.SendTextMessageAsync(message.Chat, response.Message);
                 return;
             }
 
@@ -34,43 +36,46 @@ namespace MTLServiceBot.Bot.Commands
             catch (Exception ex)
             {
                 Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
-                await botClient.SendTextMessageAsync(message.Chat, TextConsts.DeserializeJsonError);
+                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.DeserializeJsonError, replyMarkup: new ReplyKeyboardRemove());
                 return;
             }
 
             if (serviceTasksList is null || serviceTasksList.Count == 0)
             {
-                await botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksListEmpty);
+                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksListEmpty);
                 return;
             }
-
+            
             if (message.Text == TextConsts.ServiceTasksCommandName) // Если запрос полного списка задач
-            {
-                await botClient.SendTextMessageAsync(message.Chat,
-                    TextConsts.ChooseServiceRequestBtnText,
-                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
-                WorkflowMode = true;
-                return;
-            }
-
-            await GetSingleTaskInfo(botClient, message, serviceTasksList);
+                SendTasksMenuButtons(botClient, message, serviceTasksList);
+            else
+                SendSingleTaskInfo(botClient, message, serviceTasksList);
         }
 
-        private async Task GetSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
+        private void SendTasksMenuButtons(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
+        {
+            WorkflowMode = true;
+            botClient.SendTextMessageAsync(message.Chat,
+                    TextConsts.ChooseServiceRequestBtnText,
+                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
+        }
+
+        private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
         {
             var numberFormat = GetNumberRequestParts(message.Text);
             if (!numberFormat.isValidNumberFormat)
             {
-                await botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat,
+                botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat,
                     parseMode: ParseMode.Html,
                     replyMarkup: GetServiceTasksButtons(serviceTasksList));
                 return;
             }
+
             var requestNo = numberFormat.numberParts[0];
             var taskNo = numberFormat.numberParts[1];
             if (!serviceTasksList.Any(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)))
             {
-                await botClient.SendTextMessageAsync(message.Chat,
+                botClient.SendTextMessageAsync(message.Chat,
                     string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
                     parseMode: ParseMode.Html,
                     replyMarkup: GetServiceTasksButtons(serviceTasksList));
@@ -78,7 +83,7 @@ namespace MTLServiceBot.Bot.Commands
             }
 
             var serviceTaskInfo = serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)).ToMarkedDownString();
-            await botClient.SendTextMessageAsync(message.Chat,
+            botClient.SendTextMessageAsync(message.Chat,
                     serviceTaskInfo,
                     parseMode: ParseMode.Html,
                     replyMarkup: GetServiceTasksButtons(serviceTasksList));

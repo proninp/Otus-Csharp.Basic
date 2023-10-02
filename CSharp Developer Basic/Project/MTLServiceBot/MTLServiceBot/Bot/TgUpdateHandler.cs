@@ -4,6 +4,7 @@ using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot
 {
@@ -21,7 +22,7 @@ namespace MTLServiceBot.Bot
         {
             _login = new Login(TextConsts.LoginCommandName, TextConsts.LoginCommandDescription, false);
             _logout = new Logout(TextConsts.LogoutCommandName, TextConsts.LogoutCommandDescription, true);
-            _serviceTasksRequest = new SerciceTasksRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
+            _serviceTasksRequest = new ServiceTasksRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
             _unknownCommand = new Unknown(TextConsts.UnknownCommandName, TextConsts.UnknownCommandDescription, false);
             _commands = new List<Command>()
             {
@@ -45,20 +46,20 @@ namespace MTLServiceBot.Bot
             var updateValidator = CheckUpdateValid(update, message, from);
             if (!updateValidator.isValid)
             {
-                SendWarning(botClient, message, updateValidator.errorMsg);
+                ShowWarning(botClient, message, updateValidator.errorMsg);
                 return;
-            }    
+            }
 
             var commandText = message!.Text ?? "";
-            Program.ColoredPrint(string.Format(TextConsts.NewUpdateLogMsg, update.Type.ToString(), message?.Chat.Id, from?.Id, message?.Text));
+            Program.ColoredPrint(string.Format(TextConsts.NewUpdateLog, update.Type.ToString(), message?.Chat.Id, from?.Id, message?.Text));
 
             Session session = GetUserSession(message!);
             Command command = GetCommand(commandText);
 
             try
             {
-                if(await command.CheckAuthorization(botClient, message!, session))
-                    await command.Handle(botClient, message!, session);
+                if(command.CheckAuthorization(botClient, update, session))
+                    await command.HandleAsync(botClient, update, session);
             }
             catch (Exception e)
             {
@@ -70,41 +71,44 @@ namespace MTLServiceBot.Bot
         private (bool isValid, string errorMsg) CheckUpdateValid(Update update, Message? message, User? from)
         {
             if (update.Type is not (UpdateType.Message or UpdateType.CallbackQuery))
-                return (false, string.Format(TextConsts.ReceivedUpdateTypeUnknownLogMsg, update.Type));
+                return (false, string.Format(TextConsts.ReceivedUpdateTypeUnknownLog, update.Type));
             
             if (message is null)
                 return (false, string.Format(TextConsts.ReceivedUpdateTypeDataUnknown, update.Id));
 
             if (from is null)
-                return (false, string.Format(TextConsts.ReceivedUpdateFromUnknownMsg, update.Id));
+                return (false, string.Format(TextConsts.ReceivedUpdateFromUnknown, update.Id));
+
+            if (update.Type is UpdateType.Message && message.Type is not MessageType.Text)
+                return (false, TextConsts.MessageTypeError);
+
             return (true, "");
         }
 
         private Session GetUserSession(Message message)
         {
-            Session userSession;
-            var userId = message.From.Id;
+            Session session;
+            var userId = message.From!.Id;
             TgUser? user = null;
             if (_userSessions.ContainsKey(userId))
-                userSession = _userSessions[userId];
+                session = _userSessions[userId];
             else
             {
-                userSession = new Session(userId, message.Chat.Id, message.From.Username, DateTime.Now, DateTime.Parse("1753-01-01"));
-                _userSessions.Add(userId, userSession);
+                session = new Session(userId, message.Chat.Id, message.From.Username, DateTime.Now, DateTime.Parse("1753-01-01"));
+                _userSessions.Add(userId, session);
             }
-            user = userSession.User;
+            user = session.User;
             if (user is null)
             {
                 user = new TgUser(userId, message.From.Username);
-                userSession.User = user;
+                session.User = user;
             }
-            return userSession;
+            return session;
         }
 
         private Command GetCommand(string commandText)
         {
-            Command command;
-            command = _commands.Find(c => c.Name == commandText) ?? _unknownCommand;
+            Command command = _commands.Find(c => c.Name == commandText) ?? _unknownCommand;
             if (command.GetType().Equals(_unknownCommand.GetType()))
             {
                 if (_commands.Any(c => c.WorkflowMode)) // Если неизвестная команда, то это может быть workflow активной команды
@@ -115,11 +119,11 @@ namespace MTLServiceBot.Bot
             return command;
         }
 
-        private void SendWarning(ITelegramBotClient botClient, Message? msg, string warningText)
+        private void ShowWarning(ITelegramBotClient botClient, Message? msg, string warningText)
         {
             Program.ColoredPrint(warningText, ConsoleColor.Red); // TODO Log
             if (msg is not null && msg.Chat is not null)
-                botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown);
+                botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
         }
     }
 }

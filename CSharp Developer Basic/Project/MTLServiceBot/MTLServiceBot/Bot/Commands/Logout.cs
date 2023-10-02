@@ -13,20 +13,23 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public override Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
             if (!session.IsAuthorized)
             {
-                await botClient.SendTextMessageAsync(message.Chat,
-                    TextConsts.LogoutUnathorizedMsg,
+                _ = botClient.SendTextMessageAsync(update.Message!.Chat,
+                    TextConsts.LogoutUnathorized,
                     parseMode: ParseMode.Markdown);
-                return;
             }
-            session.EndSession();
-            await botClient.SendTextMessageAsync(message.Chat,
-                string.Format(TextConsts.LogoutSuccessMsg, session.User.Name), 
-                parseMode: ParseMode.Markdown,
-                replyMarkup: new ReplyKeyboardRemove());
+            else
+            {
+                session.EndSession();
+                _ = botClient.SendTextMessageAsync(update.Message!.Chat,
+                    string.Format(TextConsts.LogoutSuccess, session.User.Name),
+                    parseMode: ParseMode.Markdown,
+                    replyMarkup: new ReplyKeyboardRemove());
+            }
+            return Task.CompletedTask;
         }
     }
 }

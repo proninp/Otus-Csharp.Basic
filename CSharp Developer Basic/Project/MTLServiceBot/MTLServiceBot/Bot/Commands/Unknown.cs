@@ -12,11 +12,12 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session userSession)
+        public override Task HandleAsync(ITelegramBotClient botClient, Update update, Session userSession)
         {
-            await botClient.SendTextMessageAsync(message.Chat,
-                TextConsts.UnknownCommandMsg,
+            _ = botClient.SendTextMessageAsync(update.Message!.Chat,
+                TextConsts.UnknownCommand,
                 replyMarkup: new ReplyKeyboardRemove());
+            return Task.CompletedTask;
         }
     }
 }

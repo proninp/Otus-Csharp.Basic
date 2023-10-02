@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Users;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -21,20 +22,19 @@ namespace MTLServiceBot.Bot.Commands
             _isRequireAuthentication = isRequireAuthentication;
         }
         
-        public async Task<bool> CheckAuthorization(ITelegramBotClient botClient, Message message, Session session)
+        public bool CheckAuthorization(ITelegramBotClient botClient, Update update, Session session)
         {
             if (!IsRequireAuthentication || session.IsAuthorized)
                 return true;
 
-            var unauthMessage = $"Для выполнения команды {Name} требуется авторизация.";
-            await botClient.SendTextMessageAsync(message.Chat, unauthMessage, null, ParseMode.Markdown);
-
+            var unauthMessage = string.Format(TextConsts.AuthorizationRequired, Name);
+            _ = botClient.SendTextMessageAsync(update.Message!.Chat, unauthMessage, null, ParseMode.Markdown);
             return false;
         }
 
-        public virtual async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public virtual async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
-            await botClient.SendTextMessageAsync(message.Chat, $"Я пока что не умею обрабатывать данную команду", null, ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(update.Message!.Chat, TextConsts.UnknownCommand, null, ParseMode.Markdown);
         }
     }
 }

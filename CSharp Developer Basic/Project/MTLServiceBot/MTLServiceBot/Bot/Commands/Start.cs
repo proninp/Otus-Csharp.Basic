@@ -10,9 +10,9 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
-            await botClient.SendTextMessageAsync(message.Chat, $"Привет, {session.User.Name}!");
+            await botClient.SendTextMessageAsync(update.Message!.Chat, $"Привет, {session.User.Name}!");
         }
     }
 }

@@ -16,13 +16,15 @@ namespace MTLServiceBot.Bot.Commands
             _commandDescription = string.Join("\r\n", commandsInfo.Select(cmd => $"{cmd.Name} - {cmd.Description}"));
         }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
             var helpMessage = "*Инструкция по работе с ботом*\r\n\r\n"
                 + "*Список команд:*\r\n"
                 + _commandDescription;
 
-            await botClient.SendTextMessageAsync(message.Chat, helpMessage, parseMode: ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
+            await botClient.SendTextMessageAsync(update.Message!.Chat, helpMessage,
+                parseMode: ParseMode.Markdown,
+                replyMarkup: new ReplyKeyboardRemove());
         }
     }
 }

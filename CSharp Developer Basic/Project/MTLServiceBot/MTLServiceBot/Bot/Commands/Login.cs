@@ -12,12 +12,13 @@ namespace MTLServiceBot.Bot.Commands
     {
         public Login(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication) { }
 
-        public override async Task Handle(ITelegramBotClient botClient, Message message, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
         {
+            var message = update.Message!;
             if (session.IsAuthorized)
             {
-                await botClient.SendTextMessageAsync(message.Chat,
-                    string.Format(TextConsts.LoginAlreadyAuthorizedMsg, session.User.Login),
+                _ = botClient.SendTextMessageAsync(message.Chat,
+                    string.Format(TextConsts.LoginAlreadyAuthorized, session.User.Login),
                     parseMode: ParseMode.Markdown,
                     replyMarkup: new ReplyKeyboardRemove());
                 return;
@@ -25,10 +26,10 @@ namespace MTLServiceBot.Bot.Commands
             switch (session.AuthStep)
             {
                 case AuthStep.None:
-                    await HandleStartAuthentication(botClient, message, session);
+                    HandleStartAuthentication(botClient, message, session);
                     break;
                 case AuthStep.Username:
-                    await HandleUserLoginInput(botClient, message, session);
+                    HandleUserLoginInput(botClient, message, session);
                     break;
                 case AuthStep.Password:
                     await HandleUserPasswordInput(botClient, message, session);
@@ -36,31 +37,33 @@ namespace MTLServiceBot.Bot.Commands
             }
             WorkflowMode = session.AuthStep != AuthStep.None;
         }
-        public async Task HandleStartAuthentication(ITelegramBotClient botClient, Message message, Session session)
+
+        public void HandleStartAuthentication(ITelegramBotClient botClient, Message message, Session session)
         {
-            await botClient.SendTextMessageAsync(message.Chat, "Введите имя пользователя");
             session.AuthStep = AuthStep.Username;
+            _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.EnterLogin);
         }
-        public async Task HandleUserLoginInput(ITelegramBotClient botClient, Message message, Session session)
+
+        public void HandleUserLoginInput(ITelegramBotClient botClient, Message message, Session session)
         {
-            var usename = message.Text;
-            if (string.IsNullOrEmpty(usename))
+            if (string.IsNullOrEmpty(message.Text))
             {
-                await botClient.SendTextMessageAsync(message.Chat, "Имя пользователя не может быть пустым!");
                 session.AuthStep = AuthStep.None;
+                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.LoginEmptyError);
                 return;
             }
             session.User.Login = message.Text;
-            await botClient.SendTextMessageAsync(message.Chat, "Введите пароль");
             session.AuthStep = AuthStep.Password;
+            _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.EnterPassword);
         }
+
         private async Task HandleUserPasswordInput(ITelegramBotClient botClient, Message message, Session session)
         {
             session.AuthStep = AuthStep.None;
             var password = message.Text;
             if (string.IsNullOrEmpty(password))
             {
-                await botClient.SendTextMessageAsync(message.Chat, "Пароль не может быть пустым!");
+                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.PasswordEmptyError);
                 return;
             }
             session.User.Password = password;
@@ -69,7 +72,7 @@ namespace MTLServiceBot.Bot.Commands
             var response = await api.Authorize(session);
             if (response.IsSuccess)
                 await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default); // Убираем из истории чата введенный пароль
-            await botClient.SendTextMessageAsync(message.Chat, response.Message);
+            _ = botClient.SendTextMessageAsync(message.Chat, response.Message);
         }
     }
 }
