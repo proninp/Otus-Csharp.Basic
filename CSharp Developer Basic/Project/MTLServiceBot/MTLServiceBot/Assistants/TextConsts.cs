@@ -58,6 +58,11 @@
             "Для продолжения работы введите номер другой сервисной заявки.\n" +
             "Или выберите другую команду из списка меню.";
 
-        public const string ChooseServiceRequestBtnText = "Выберите сервисную заявку из списка";
+        public const string ChooseServiceRequestBtn = "Выберите сервисную заявку из списка";
+
+        
+        public const string CallBackCommandChangeStatus = "change_status {0}";
+        public const string CallBackCommandAddFileDescription = "Добавить вложение";
+        public const string CallBackCommandAddFile = "add_file {0}";
     }
 }

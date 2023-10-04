@@ -22,19 +22,19 @@ namespace MTLServiceBot.Bot.Commands
             _isRequireAuthentication = isRequireAuthentication;
         }
         
-        public bool CheckAuthorization(ITelegramBotClient botClient, Update update, Session session)
+        public bool CheckAuthorization(ITelegramBotClient botClient, TgUpdate messageData, Session session)
         {
             if (!IsRequireAuthentication || session.IsAuthorized)
                 return true;
 
             var unauthMessage = string.Format(TextConsts.AuthorizationRequired, Name);
-            _ = botClient.SendTextMessageAsync(update.Message!.Chat, unauthMessage, null, ParseMode.Markdown);
+            _ = botClient.SendTextMessageAsync(messageData.Chat!, unauthMessage, null, ParseMode.Markdown);
             return false;
         }
 
-        public virtual async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
+        public virtual async Task HandleAsync(ITelegramBotClient botClient, TgUpdate messageData, Session session)
         {
-            await botClient.SendTextMessageAsync(update.Message!.Chat, TextConsts.UnknownCommand, null, ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(messageData.Chat!, TextConsts.UnknownCommand, null, ParseMode.Markdown);
         }
     }
 }

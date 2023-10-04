@@ -1,9 +1,4 @@
-﻿using MTLServiceBot.Assistants;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using Newtonsoft.Json;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -17,10 +12,23 @@ namespace MTLServiceBot.API.Entities
         private const string UserCommentTag = "userComment";
         private const string EpochTimeStampTag = "epochTimeStamp";
 
+        public string Id { get => $"{RequestNo}_{TaskNo}"; }
+        public ServiceTaskStatus TaskStatus
+        {
+            get
+            {
+                if (Enum.TryParse(StatusEnum, out ServiceTaskStatus status))
+                    return status;
+                return ServiceTaskStatus.Error;
+            }
+        }
+
         [JsonPropertyName("Request_No")]
         public string RequestNo { get; set; } = "";
         [JsonPropertyName("Task_No")]
         public string TaskNo { get; set; } = "";
+        [JsonPropertyName("Status")]
+        public string StatusEnum { get; set; } = "";
         [JsonPropertyName("StatusML")]
         public string Status { get; set; } = "";
         [JsonPropertyName("Executor")]
@@ -71,7 +79,7 @@ namespace MTLServiceBot.API.Entities
         }
 
         public string ToMarkedDownString()
-        {   
+        {
             var sb = new StringBuilder();
             AppendMarkDownParameterLine(sb, "Запрос", RequestNo);
             AppendMarkDownParameterLine(sb, "Задача", TaskNo);
@@ -92,6 +100,13 @@ namespace MTLServiceBot.API.Entities
             sb.AppendJoin("; ", RequestNo, TaskNo);
             return sb.ToString();
         }
+
+        public string GetNextStatusDescription() => TaskStatus switch
+        {
+            ServiceTaskStatus.New => "В работу",
+            ServiceTaskStatus.Execution => "Закрыть",
+            _ => ""
+        };
 
         private void AppendMarkDownParameterLine(StringBuilder sb, string name, string value)
         {

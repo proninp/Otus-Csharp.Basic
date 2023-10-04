@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.API;
+﻿using Azure;
+using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
@@ -16,58 +17,73 @@ namespace MTLServiceBot.Bot.Commands
         {
         }
 
-        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
-            var message = update.Message!;
             var api = ServiceAPI.GetInstance();
             
             var response = await api.GetServiceTasks(session);
             if (!response.IsSuccess)
             {
-                _ = botClient.SendTextMessageAsync(message.Chat, response.Message);
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    response.Message,
+                    replyMarkup: new ReplyKeyboardRemove());
                 return;
             }
 
-            List<ServiceTask>? serviceTasksList = new();
+            if (!GetServiceTasksList(out List<ServiceTask>? serviceTasksList, botClient, update, response.ResponseText))
+                return;
+            
+            if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(TextConsts.ServiceTasksCommandName)) // Если запрос полного списка задач
+                SendMenuButtons(botClient, update.Message, serviceTasksList!);
+            else
+            {
+                SendSingleTaskInfo(botClient, update.Message, serviceTasksList!);
+            }
+                
+        }
+
+        private bool GetServiceTasksList(out List<ServiceTask>? serviceTasksList, ITelegramBotClient botClient, TgUpdate update, string apiResponseText)
+        {
+            serviceTasksList = new();
             try
             {
-                serviceTasksList = JsonSerializer.Deserialize<List<ServiceTask>>(response.ResponseText);
+                serviceTasksList = JsonSerializer.Deserialize<List<ServiceTask>>(apiResponseText);
             }
             catch (Exception ex)
             {
                 Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
-                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.DeserializeJsonError, replyMarkup: new ReplyKeyboardRemove());
-                return;
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    TextConsts.DeserializeJsonError,
+                    replyMarkup: new ReplyKeyboardRemove());
+                return false;
             }
 
             if (serviceTasksList is null || serviceTasksList.Count == 0)
             {
-                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksListEmpty);
-                return;
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    TextConsts.ServiceTasksListEmpty,
+                    replyMarkup: new ReplyKeyboardRemove());
+                return false;
             }
-            
-            if (message.Text == TextConsts.ServiceTasksCommandName) // Если запрос полного списка задач
-                SendTasksMenuButtons(botClient, message, serviceTasksList);
-            else
-                SendSingleTaskInfo(botClient, message, serviceTasksList);
+            return true;
         }
 
-        private void SendTasksMenuButtons(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
+        private void SendMenuButtons(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
         {
             WorkflowMode = true;
             botClient.SendTextMessageAsync(message.Chat,
-                    TextConsts.ChooseServiceRequestBtnText,
-                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
+                    TextConsts.ChooseServiceRequestBtn,
+                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
         }
 
         private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
         {
-            var numberFormat = GetNumberRequestParts(message.Text);
+            var numberFormat = GetNumberRequestParts(message.Text ?? "");
             if (!numberFormat.isValidNumberFormat)
             {
                 botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat,
                     parseMode: ParseMode.Html,
-                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
+                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
                 return;
             }
 
@@ -78,30 +94,33 @@ namespace MTLServiceBot.Bot.Commands
                 botClient.SendTextMessageAsync(message.Chat,
                     string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
                     parseMode: ParseMode.Html,
-                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
+                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
                 return;
             }
 
-            var serviceTaskInfo = serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)).ToMarkedDownString();
+            var serviceTask = serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo));
+            var inlineButtons = GetServiceTaskInlineButtons(serviceTask);
+            var replyButtons = GetServiceTasksReplyButtons(serviceTasksList);
+            var serviceTaskInfo = serviceTask.ToMarkedDownString();
             botClient.SendTextMessageAsync(message.Chat,
-                    serviceTaskInfo,
+                    serviceTask.ToMarkedDownString(),
                     parseMode: ParseMode.Html,
-                    replyMarkup: GetServiceTasksButtons(serviceTasksList));
+                    replyMarkup: inlineButtons ?? replyButtons);
         }
 
-        private (bool isValidNumberFormat, List<string> numberParts) GetNumberRequestParts(string message)
+        private (bool isValidNumberFormat, List<string> numberParts) GetNumberRequestParts(string messageText)
         {
             var reqParts = new List<string>();
-            bool isValidPattern = message.Contains(TextConsts.SingleTaskNumberFormatSeparator);
+            bool isValidPattern = messageText.Contains(TextConsts.SingleTaskNumberFormatSeparator);
             if (isValidPattern)
             {
-                reqParts = message.Split(TextConsts.SingleTaskNumberFormatSeparator).ToList();
+                reqParts = messageText.Split(TextConsts.SingleTaskNumberFormatSeparator).ToList();
                 isValidPattern = reqParts.Count == 2;
             }
             return (isValidPattern, reqParts);
         }
 
-        private IReplyMarkup GetServiceTasksButtons(List<ServiceTask> tasks)
+        private IReplyMarkup GetServiceTasksReplyButtons(List<ServiceTask> tasks)
         {
             var rows = new List<KeyboardButton[]>();
             var cols = new List<KeyboardButton>();

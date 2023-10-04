@@ -12,12 +12,11 @@ namespace MTLServiceBot.Bot.Commands
     {
         public Login(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication) { }
 
-        public override async Task HandleAsync(ITelegramBotClient botClient, Update update, Session session)
+        public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
-            var message = update.Message!;
             if (session.IsAuthorized)
             {
-                _ = botClient.SendTextMessageAsync(message.Chat,
+                _ = botClient.SendTextMessageAsync(update.Chat,
                     string.Format(TextConsts.LoginAlreadyAuthorized, session.User.Login),
                     parseMode: ParseMode.Markdown,
                     replyMarkup: new ReplyKeyboardRemove());
@@ -26,13 +25,13 @@ namespace MTLServiceBot.Bot.Commands
             switch (session.AuthStep)
             {
                 case AuthStep.None:
-                    HandleStartAuthentication(botClient, message, session);
+                    HandleStartAuthentication(botClient, update.Message, session);
                     break;
                 case AuthStep.Username:
-                    HandleUserLoginInput(botClient, message, session);
+                    HandleUserLoginInput(botClient, update.Message, session);
                     break;
                 case AuthStep.Password:
-                    await HandleUserPasswordInput(botClient, message, session);
+                    await HandleUserPasswordInput(botClient, update.Message, session);
                     break;
             }
             WorkflowMode = session.AuthStep != AuthStep.None;

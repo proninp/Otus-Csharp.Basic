@@ -40,26 +40,21 @@ namespace MTLServiceBot.Bot
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            var message = update.Message ?? update.CallbackQuery?.Message;
-            var from = update.Message?.From ?? update.CallbackQuery?.From;
-
-            var updateValidator = CheckUpdateValid(update, message, from);
-            if (!updateValidator.isValid)
-            {
-                ShowWarning(botClient, message, updateValidator.errorMsg);
+            if (!CheckUpdateValid(botClient, update))
                 return;
-            }
+            var messageData = new TgUpdate(update.Id, update.Type, GetUserFromUpdate(update)!, GetMessageFromUpdate(update)!, update.CallbackQuery);
 
-            var commandText = message!.Text ?? "";
-            Program.ColoredPrint(string.Format(TextConsts.NewUpdateLog, update.Type.ToString(), message?.Chat.Id, from?.Id, message?.Text));
+            var commandText = messageData.Message!.Text ?? "";
+            Program.ColoredPrint(string.Format(TextConsts.NewUpdateLog, messageData.UpdateType.ToString(),
+                messageData.Chat!.Id, messageData.From!.Id, commandText));
 
-            Session session = GetUserSession(message!);
+            Session session = GetUserSession(messageData.Message!);
             Command command = GetCommand(commandText);
 
             try
             {
-                if(command.CheckAuthorization(botClient, update, session))
-                    await command.HandleAsync(botClient, update, session);
+                if(command.CheckAuthorization(botClient, messageData, session))
+                    await command.HandleAsync(botClient, messageData, session);
             }
             catch (Exception e)
             {
@@ -68,22 +63,38 @@ namespace MTLServiceBot.Bot
             }
         }
 
-        private (bool isValid, string errorMsg) CheckUpdateValid(Update update, Message? message, User? from)
+        private bool CheckUpdateValid(ITelegramBotClient botClient, Update update)
         {
+            var msg = GetMessageFromUpdate(update);
+            var from = GetUserFromUpdate(update);
             if (update.Type is not (UpdateType.Message or UpdateType.CallbackQuery))
-                return (false, string.Format(TextConsts.ReceivedUpdateTypeUnknownLog, update.Type));
-            
-            if (message is null)
-                return (false, string.Format(TextConsts.ReceivedUpdateTypeDataUnknown, update.Id));
-
+            {
+                ShowWarning(botClient, msg, string.Format(TextConsts.ReceivedUpdateTypeUnknownLog, update.Type));
+                return false;
+            }
+            if (msg is null || msg.Chat is null)
+            {
+                ShowWarning(botClient, msg, string.Format(TextConsts.ReceivedUpdateTypeDataUnknown, update.Id));
+                return false;
+            }
             if (from is null)
-                return (false, string.Format(TextConsts.ReceivedUpdateFromUnknown, update.Id));
-
-            if (update.Type is UpdateType.Message && message.Type is not MessageType.Text)
-                return (false, TextConsts.MessageTypeError);
-
-            return (true, "");
+            {
+                ShowWarning(botClient, msg, string.Format(TextConsts.ReceivedUpdateFromUnknown, update.Id));
+                return false;
+            }
+            if (update.Type is UpdateType.Message && msg.Type is not MessageType.Text)
+            {
+                ShowWarning(botClient, msg, TextConsts.MessageTypeError);
+                return false;
+            }
+            return true;
         }
+
+        private Message? GetMessageFromUpdate(Update update) =>
+            update.Message ?? update.CallbackQuery?.Message;
+
+        private User? GetUserFromUpdate(Update update) =>
+            update.Message?.From ?? update.CallbackQuery?.From;
 
         private Session GetUserSession(Message message)
         {
