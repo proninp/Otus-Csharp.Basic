@@ -9,10 +9,11 @@ namespace MTLServiceBot.Users
         public TgUser User { get; set; }
         public long ChatId { get; init; }
         public AuthStep AuthStep { get; set; }
-        private bool _isAuthorized;
+        public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public bool IsAuthorized { get => CheckAuthorization(); }
         public DateTime LoginDatetime { get; set; }
         public DateTime LogoutDatetime { get; set; }
+        private bool _isAuthorized;
 
         public Session(long id, long chatId, string? username, DateTime loginDatetime, DateTime logoutDatetime)
             : this(id, chatId, "", "", loginDatetime)

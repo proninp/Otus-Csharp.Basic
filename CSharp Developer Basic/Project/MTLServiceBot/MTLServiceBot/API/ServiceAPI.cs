@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Assistants;
+﻿using MTLServiceBot.API.Entities;
+using MTLServiceBot.Assistants;
 using MTLServiceBot.Bot;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
@@ -14,6 +15,7 @@ namespace MTLServiceBot.API
         private readonly string _mailApiUrl;
         private readonly string _authApiUrl;
         private readonly string _serviceTasksApiUrl;
+        private readonly string _serviceTaskApiUrl;
         private readonly string _setTaskStatusApiUrl;
         private readonly string _setTaskFilesListUrl;
         private readonly string _addCommentApiUrl;
@@ -24,9 +26,11 @@ namespace MTLServiceBot.API
             _mailApiUrl = ConfigRepository.GetApiUrl();
             _authApiUrl = $"{_mailApiUrl}/GetST";
             _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
+            _serviceTaskApiUrl = $"{_mailApiUrl}/ServiceEngineerRequestsAll" + "?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
             _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
             _setTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
             _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
+
         }
 
         public static ServiceAPI GetInstance()
@@ -62,8 +66,15 @@ namespace MTLServiceBot.API
             return authResponse;
         }
 
+        public async Task<ApiResponse> ChangeServiceTaskStatus(Session session, ServiceTask task)
+            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _setTaskStatusApiUrl, task.GetNewStatusContent());
+
         public async Task<ApiResponse> GetServiceTasks(Session session)
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);
+
+        public async Task<ApiResponse> GetServiceTask(Session session, string requestNo, string taskNo) =>
+            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, 
+                string.Format(_serviceTaskApiUrl, requestNo, taskNo));
 
         private async Task<ApiResponse> SendServiceRequest(
             Func<string, HttpMethod, string, JsonContent?, Task<(ApiResponseStatus status, string responseText)>> request,

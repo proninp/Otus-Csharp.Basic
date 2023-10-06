@@ -7,13 +7,12 @@ namespace MTLServiceBot.API
 {
     internal class NavAPI
     {
-        private static HttpClient? _httpClient;
+        private static readonly HttpClient _httpClient = new();
         private HttpResponseMessage? _httpResponse;
         public string? _responseText;
 
         public NavAPI() 
         {
-            _httpClient = new();
         }
 
         /// <summary>
@@ -66,6 +65,7 @@ namespace MTLServiceBot.API
             JObject jObject = JObject.Parse(jsonResponse);
             _responseText = jObject["value"]?.ToString();
         }
+
         private ApiResponseStatus GetApiResponseStatus()
         {
             if (_httpResponse is not null)
@@ -77,6 +77,7 @@ namespace MTLServiceBot.API
             }
             return ApiResponseStatus.Error;
         }
+
         private void LogHttpResponseError()
         {
             // TODO Logging

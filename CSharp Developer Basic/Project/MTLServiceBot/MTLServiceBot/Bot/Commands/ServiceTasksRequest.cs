@@ -1,5 +1,4 @@
-﻿using Azure;
-using MTLServiceBot.API;
+﻿using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
@@ -13,33 +12,36 @@ namespace MTLServiceBot.Bot.Commands
 {
     public partial class ServiceTasksRequest : Command
     {
-        public ServiceTasksRequest(string name, string description, bool isRequireAuthentication): base(name, description, isRequireAuthentication)
+        private readonly ServiceAPI _api;
+
+        public ServiceTasksRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
+            _api = ServiceAPI.GetInstance();
         }
 
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
-            var api = ServiceAPI.GetInstance();
-            
-            var response = await api.GetServiceTasks(session);
+            var response = await _api.GetServiceTasks(session);
             if (!response.IsSuccess)
             {
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    response.Message,
-                    replyMarkup: new ReplyKeyboardRemove());
+                _ = botClient.SendTextMessageAsync(update.Chat, response.Message, replyMarkup: new ReplyKeyboardRemove());
                 return;
             }
 
             if (!GetServiceTasksList(out List<ServiceTask>? serviceTasksList, botClient, update, response.ResponseText))
                 return;
-            
+
+            var replyButtons = GetServiceTasksReplyButtons(serviceTasksList!);
             if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(TextConsts.ServiceTasksCommandName)) // Если запрос полного списка задач
-                SendMenuButtons(botClient, update.Message, serviceTasksList!);
+            {
+                session.WorkFlowState = WorkFlow.ServiceRequest;
+                SendMenuButtons(botClient, update.Message, replyButtons);
+            }
             else
             {
-                SendSingleTaskInfo(botClient, update.Message, serviceTasksList!);
+                if (update.UpdateType == UpdateType.Message)
+                    SendSingleTaskInfo(botClient, update.Message, serviceTasksList!, replyButtons);
             }
-                
         }
 
         private bool GetServiceTasksList(out List<ServiceTask>? serviceTasksList, ITelegramBotClient botClient, TgUpdate update, string apiResponseText)
@@ -68,15 +70,14 @@ namespace MTLServiceBot.Bot.Commands
             return true;
         }
 
-        private void SendMenuButtons(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
+        private void SendMenuButtons(ITelegramBotClient botClient, Message message, IReplyMarkup replyButtons)
         {
-            WorkflowMode = true;
             botClient.SendTextMessageAsync(message.Chat,
                     TextConsts.ChooseServiceRequestBtn,
-                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
+                    replyMarkup: replyButtons);
         }
 
-        private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList)
+        private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList, IReplyMarkup replyButtons)
         {
             var numberFormat = GetNumberRequestParts(message.Text ?? "");
             if (!numberFormat.isValidNumberFormat)
@@ -100,8 +101,8 @@ namespace MTLServiceBot.Bot.Commands
 
             var serviceTask = serviceTasksList.First(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo));
             var inlineButtons = GetServiceTaskInlineButtons(serviceTask);
-            var replyButtons = GetServiceTasksReplyButtons(serviceTasksList);
             var serviceTaskInfo = serviceTask.ToMarkedDownString();
+
             botClient.SendTextMessageAsync(message.Chat,
                     serviceTask.ToMarkedDownString(),
                     parseMode: ParseMode.Html,

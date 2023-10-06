@@ -34,12 +34,16 @@ namespace MTLServiceBot.SQL
             var query = new StringBuilder();
             query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [Login] login, [Password Cipher] password, [Login Datetime] loginDatetime");
             query.Append(" FROM [dbo].[Tg User Sessions]");
-            query.Append($" WHERE [User Id] = {userSession.User.Id}");
-            query.Append($" AND [Chat Id] = {userSession.ChatId}");
+            query.Append(" WHERE [User Id] = @userId");
+            query.Append(" AND [Chat Id] = @chatId");
             query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
             query.Append(" ORDER BY [Login Datetime] DESC");
             using var db = new SqlConnection(AppConfig.ConnectionString);
-            var session = db.QueryFirstOrDefault<Session>(query.ToString());
+            var session = db.QueryFirstOrDefault<Session>(query.ToString(), new
+            {
+                userId = userSession.User.Id,
+                chatId = userSession.ChatId
+            });
             userSession.SetCredentials(session);
         }
         public static List<Session> GetActiveSessions()

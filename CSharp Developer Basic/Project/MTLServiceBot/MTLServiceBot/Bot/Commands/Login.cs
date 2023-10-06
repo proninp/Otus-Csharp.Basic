@@ -34,7 +34,8 @@ namespace MTLServiceBot.Bot.Commands
                     await HandleUserPasswordInput(botClient, update.Message, session);
                     break;
             }
-            WorkflowMode = session.AuthStep != AuthStep.None;
+            if (session.AuthStep != AuthStep.None)
+                session.WorkFlowState = WorkFlow.Login;
         }
 
         public void HandleStartAuthentication(ITelegramBotClient botClient, Message message, Session session)

@@ -1,7 +1,6 @@
 ﻿using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace MTLServiceBot.Bot.Commands
@@ -11,7 +10,6 @@ namespace MTLServiceBot.Bot.Commands
         private readonly string _name;
         private readonly string _description;
         private readonly bool _isRequireAuthentication;
-        public bool WorkflowMode { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public string Name { get => _name; }
         public string Description { get => _description; }
         public bool IsRequireAuthentication { get => _isRequireAuthentication; }
@@ -21,7 +19,7 @@ namespace MTLServiceBot.Bot.Commands
             _description = description;
             _isRequireAuthentication = isRequireAuthentication;
         }
-        
+
         public bool CheckAuthorization(ITelegramBotClient botClient, TgUpdate messageData, Session session)
         {
             if (!IsRequireAuthentication || session.IsAuthorized)

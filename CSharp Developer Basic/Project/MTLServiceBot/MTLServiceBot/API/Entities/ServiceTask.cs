@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MTLServiceBot.API.Entities
 {
@@ -17,7 +17,7 @@ namespace MTLServiceBot.API.Entities
         {
             get
             {
-                if (Enum.TryParse(StatusEnum, out ServiceTaskStatus status))
+                if (Enum.TryParse(Status, out ServiceTaskStatus status))
                     return status;
                 return ServiceTaskStatus.Error;
             }
@@ -28,9 +28,9 @@ namespace MTLServiceBot.API.Entities
         [JsonPropertyName("Task_No")]
         public string TaskNo { get; set; } = "";
         [JsonPropertyName("Status")]
-        public string StatusEnum { get; set; } = "";
-        [JsonPropertyName("StatusML")]
         public string Status { get; set; } = "";
+        [JsonPropertyName("StatusML")]
+        public string StatusML { get; set; } = "";
         [JsonPropertyName("Executor")]
         public string Executor { get; set; } = "";
         [JsonPropertyName("Executors")]
@@ -64,7 +64,7 @@ namespace MTLServiceBot.API.Entities
         {
             RequestNo = requestNo;
             TaskNo = taskNo;
-            Status = status;
+            StatusML = status;
             Executor = executor;
             Executors = executors;
             ShortName = shortName;
@@ -78,12 +78,29 @@ namespace MTLServiceBot.API.Entities
             AttachedFilesCount = attachedFilesCount;
         }
 
+        public JsonContent GetNewStatusContent()
+        {
+            string newStatus = TaskStatus switch
+            {
+                ServiceTaskStatus.New => ServiceTaskStatus.Execution.ToString(),
+                ServiceTaskStatus.Execution => ServiceTaskStatus.Closed.ToString(),
+                _ => Status
+            };
+
+            return JsonContent.Create(new
+            {
+                serviceRequestNo = RequestNo,
+                serviceTaskNo = TaskNo,
+                newStatus = newStatus
+            });
+        }
+
         public string ToMarkedDownString()
         {
             var sb = new StringBuilder();
             AppendMarkDownParameterLine(sb, "Запрос", RequestNo);
             AppendMarkDownParameterLine(sb, "Задача", TaskNo);
-            AppendMarkDownParameterLine(sb, "Статус", Status);
+            AppendMarkDownParameterLine(sb, "Статус", StatusML);
             AppendMarkDownParameterLine(sb, "Исполнитель", Executor);
             AppendMarkDownParameterLine(sb, "Наименование", Name);
             AppendMarkDownParameterLine(sb, "Адрес", Address);
@@ -101,7 +118,16 @@ namespace MTLServiceBot.API.Entities
             return sb.ToString();
         }
 
-        public string GetNextStatusDescription() => TaskStatus switch
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ServiceTask task)
+                return false;
+            return task.Id == Id;
+        }
+
+        public override int GetHashCode() => RequestNo.GetHashCode() ^ TaskNo.GetHashCode();
+
+        public string GetNextStatusStepDescription() => TaskStatus switch
         {
             ServiceTaskStatus.New => "В работу",
             ServiceTaskStatus.Execution => "Закрыть",
