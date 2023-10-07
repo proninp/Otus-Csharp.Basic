@@ -47,21 +47,27 @@
 
         public const string ServiceTasksListEmpty = "В системе не найдено доступных сервисных запросов";
         public const string SingleTaskNumberFormatSeparator = "; ";
+        public const string ChooseServiceRequestBtn = "Выберите сервисную заявку из списка";
+        public const string SingleServiceRequestUpdateFailureMsg = "Не удалось обновить информацию по сервисной заявке <code>[{0}; {1}]</code>.";
+
         public const string ServiceTasksWorkflowIncorrectFormat = "Некорректный формат номера сервисной заявки.\n\n" +
             "Для продолжения работы введите номер сервисной заявки в форматe:\n" +
             $"<b>[Номер запроса{SingleTaskNumberFormatSeparator}Номер задачи]</b>.\n\n" +
             "Или выберите другую команду из списка меню.";
+
         public const string ServiceTasksWorkflowNotFound = "Не найдена сервисная заявка с номером:\n<b>{0}{2}{1}</b>\n" +
             "Для продолжения работы введите номер другой сервисной заявки.\n" +
             "Или выберите другую команду из списка меню.";
-        public const string ChooseServiceRequestBtn = "Выберите сервисную заявку из списка";
 
-        public const string CallBackCommandChangeStatus = "change_status {0}";
-        public const string CallBackCommandAddFile = "add_file {0}";
-        public const string CallBackCommandAddFileDescription = "Добавить вложение";
+        public const string CBCmdDataSeparator = "|";
+        public const string CBCmdChangeStatus = "change_status";
+        public const string CBCmdAddFile = "add_file";
+        public const string CBCmdAddFileDescription = "Добавить вложение";
 
-        public const string CallBackCommandDataNotRecognized = "Данные команды CallbackQuery не распознаны: '{0}'";
-        public const string CallBackCommandServiceTaskNotFound = "Сервисная задача {0} не найдена в списке доступных задач.\n" +
+        public const string CBCmdDataEmpty = "Ошибка обработки. CallBackQuery. Данные команды CallbackQuery не содержат информации.";
+        public const string CBCmdDataUndefined = "Ошибка обработки. Не удалось идентифицировать запрос CallBackQuery. Данные запроса: {0}";
+        public const string CBCmdDataNotRecognized = "Данные команды CallbackQuery не распознаны: '{0}'";
+        public const string CBCmdServiceTaskNotFound = "Сервисная задача {0} не найдена в списке доступных задач.\n" +
             $"Выполните команду {ServiceTasksCommandName} повторно и попробуйте еще раз.";
     }
 }

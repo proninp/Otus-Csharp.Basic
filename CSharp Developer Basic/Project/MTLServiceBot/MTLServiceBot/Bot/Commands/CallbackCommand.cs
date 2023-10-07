@@ -2,6 +2,7 @@
 {
     public enum CallbackCommand
     {
+        None,
         ChangeStatus,
         AddFile
     }

@@ -17,7 +17,8 @@ namespace MTLServiceBot.API
         private readonly string _serviceTasksApiUrl;
         private readonly string _serviceTaskApiUrl;
         private readonly string _setTaskStatusApiUrl;
-        private readonly string _setTaskFilesListUrl;
+        private readonly string _addFileApiUrl;
+        private readonly string _getTaskFilesListUrl;
         private readonly string _addCommentApiUrl;
 
         private ServiceAPI()
@@ -28,8 +29,10 @@ namespace MTLServiceBot.API
             _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
             _serviceTaskApiUrl = $"{_mailApiUrl}/ServiceEngineerRequestsAll" + "?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
             _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
-            _setTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
+            _addFileApiUrl = $"{_mailApiUrl}/AddServiceFile";
+            _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
             _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
+            
 
         }
 
@@ -67,7 +70,8 @@ namespace MTLServiceBot.API
         }
 
         public async Task<ApiResponse> ChangeServiceTaskStatus(Session session, ServiceTask task)
-            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _setTaskStatusApiUrl, task.GetNewStatusContent());
+            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, 
+                _setTaskStatusApiUrl, task.GetNewStatusContent());
 
         public async Task<ApiResponse> GetServiceTasks(Session session)
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);

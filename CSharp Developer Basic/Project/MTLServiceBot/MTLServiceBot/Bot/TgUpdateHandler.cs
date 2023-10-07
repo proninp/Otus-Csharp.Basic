@@ -23,7 +23,7 @@ namespace MTLServiceBot.Bot
         {
             _login = new Login(TextConsts.LoginCommandName, TextConsts.LoginCommandDescription, false);
             _logout = new Logout(TextConsts.LogoutCommandName, TextConsts.LogoutCommandDescription, true);
-            _serviceTasksRequest = new ServiceTasksRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
+            _serviceTasksRequest = new ServiceRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
             _unknownCommand = new Unknown(TextConsts.UnknownCommandName, TextConsts.UnknownCommandDescription, false);
             _commands = new()
             {

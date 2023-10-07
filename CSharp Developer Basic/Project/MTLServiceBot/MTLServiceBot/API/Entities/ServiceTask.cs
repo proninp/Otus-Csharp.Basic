@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MTLServiceBot.Assistants;
+using Newtonsoft.Json;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -12,7 +13,7 @@ namespace MTLServiceBot.API.Entities
         private const string UserCommentTag = "userComment";
         private const string EpochTimeStampTag = "epochTimeStamp";
 
-        public string Id { get => $"{RequestNo}_{TaskNo}"; }
+        public string Id { get => $"{RequestNo}{TextConsts.SingleTaskNumberFormatSeparator}{TaskNo}"; }
         public ServiceTaskStatus TaskStatus
         {
             get
@@ -92,6 +93,17 @@ namespace MTLServiceBot.API.Entities
                 serviceRequestNo = RequestNo,
                 serviceTaskNo = TaskNo,
                 newStatus = newStatus
+            });
+        }
+
+        public JsonContent GetNewFileContent(string fileName, string fileDescription, string fileContent)
+        {
+            return JsonContent.Create(new
+            {
+                serviceRequestNo = RequestNo,
+                fileName,
+                fileDescription,
+                fileContent
             });
         }
 

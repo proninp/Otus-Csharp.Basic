@@ -10,11 +10,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
 {
-    public partial class ServiceTasksRequest : Command
+    public partial class ServiceRequest : Command
     {
         private readonly ServiceAPI _api;
 
-        public ServiceTasksRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
+        public ServiceRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
             _api = ServiceAPI.GetInstance();
         }
@@ -32,15 +32,22 @@ namespace MTLServiceBot.Bot.Commands
                 return;
 
             var replyButtons = GetServiceTasksReplyButtons(serviceTasksList!);
+
             if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(TextConsts.ServiceTasksCommandName)) // Если запрос полного списка задач
             {
                 session.WorkFlowState = WorkFlow.ServiceRequest;
                 SendMenuButtons(botClient, update.Message, replyButtons);
+                return;
             }
-            else
+
+            switch (update.UpdateType)
             {
-                if (update.UpdateType == UpdateType.Message)
+                case UpdateType.Message:
                     SendSingleTaskInfo(botClient, update.Message, serviceTasksList!, replyButtons);
+                    break;
+                case UpdateType.CallbackQuery:
+                    _ = HandleCallBackDataUpdate(botClient, update, session, serviceTasksList!, replyButtons);
+                    break;
             }
         }
 
