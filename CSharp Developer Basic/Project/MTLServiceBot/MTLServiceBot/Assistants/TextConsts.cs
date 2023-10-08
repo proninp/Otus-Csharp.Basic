@@ -63,6 +63,11 @@
         public const string CBCmdChangeStatus = "change_status";
         public const string CBCmdAddFile = "add_file";
         public const string CBCmdAddFileDescription = "Добавить вложение";
+        public const string CBCmdAddFileCallMsgDescription = "Отправьте вложение для закрепления к сервисному запросу <code>{0}</code>";
+        public const string CBCmdAddFileCallHandlerError = "Невозможно выполнить добавление файла, некорректное значение потока выполнения";
+        public const string CBCmdAddFileCallHandlerFileError = "Невозможно выполнить добавление файла для заявки <code>{0}</code>\n" +
+            "В полученном сообщении не найдено вложения допустимого типа";
+        public const string CBCmdAddFileCallHandlerFileIdError = "Ошибка добавления файла для заявки <code>{0}</code> - невозможно распознать Id полученного файла";
 
         public const string CBCmdDataEmpty = "Ошибка обработки. CallBackQuery. Данные команды CallbackQuery не содержат информации.";
         public const string CBCmdDataUndefined = "Ошибка обработки. Не удалось идентифицировать запрос CallBackQuery. Данные запроса: {0}";

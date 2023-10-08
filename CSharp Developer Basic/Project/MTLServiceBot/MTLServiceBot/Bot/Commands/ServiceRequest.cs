@@ -35,7 +35,7 @@ namespace MTLServiceBot.Bot.Commands
 
             if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(TextConsts.ServiceTasksCommandName)) // Если запрос полного списка задач
             {
-                session.WorkFlowState = WorkFlow.ServiceRequest;
+                session.WorkFlowState = WorkFlow.ServiceRequests;
                 SendMenuButtons(botClient, update.Message, replyButtons);
                 return;
             }
@@ -43,7 +43,10 @@ namespace MTLServiceBot.Bot.Commands
             switch (update.UpdateType)
             {
                 case UpdateType.Message:
-                    SendSingleTaskInfo(botClient, update.Message, serviceTasksList!, replyButtons);
+                    if (session.WorkFlowState == WorkFlow.ServiceRequests)
+                        SendSingleTaskInfo(botClient, update.Message, serviceTasksList!, replyButtons);
+                    else if (session.WorkFlowState == WorkFlow.ServiceRequestAddFile)
+                        HandleAddNewFileCall(botClient, update, session, serviceTasksList!, replyButtons);
                     break;
                 case UpdateType.CallbackQuery:
                     _ = HandleCallBackDataUpdate(botClient, update, session, serviceTasksList!, replyButtons);

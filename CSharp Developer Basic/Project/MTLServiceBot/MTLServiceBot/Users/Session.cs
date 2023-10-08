@@ -9,17 +9,17 @@ namespace MTLServiceBot.Users
         public TgUser User { get; set; }
         public long ChatId { get; init; }
         public AuthStep AuthStep { get; set; }
-        public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public bool IsAuthorized { get => CheckAuthorization(); }
+        private bool _isAuthorized;
+        public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
+        public string WorkFlowTaskId { get; set; }
         public DateTime LoginDatetime { get; set; }
         public DateTime LogoutDatetime { get; set; }
-        private bool _isAuthorized;
 
         public Session(long id, long chatId, string? username, DateTime loginDatetime, DateTime logoutDatetime)
             : this(id, chatId, "", "", loginDatetime)
         {
             User.Name = username ?? "";
-            
             LogoutDatetime = logoutDatetime;
         }
 
@@ -29,6 +29,7 @@ namespace MTLServiceBot.Users
             ChatId = chatId;
             LoginDatetime = loginDatetime;
             AuthStep = AuthStep.None;
+            WorkFlowTaskId = "";
         }
 
         private DateTime GetZeroDateTime() => DateTime.Parse("1753-01-01");

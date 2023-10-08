@@ -4,6 +4,7 @@
     {
         None,
         Login,
-        ServiceRequest
+        ServiceRequests,
+        ServiceRequestAddFile
     }
 }

@@ -37,7 +37,7 @@ namespace MTLServiceBot.Bot
             var helpCommadInfo = _commands.Select(c => (c.Name, c.Description));
             _commands.Add(new Help(TextConsts.HelpCommandName, TextConsts.HelpCommandDescription, false, helpCommadInfo));
             _commands.Add(_unknownCommand);
-            _workflows = new() { { WorkFlow.Login, _login }, { WorkFlow.ServiceRequest, _serviceTasksRequest } };
+            _workflows = new() { { WorkFlow.Login, _login }, { WorkFlow.ServiceRequests, _serviceTasksRequest } };
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
@@ -89,7 +89,8 @@ namespace MTLServiceBot.Bot
                 ShowWarning(botClient, msg, string.Format(TextConsts.UpdateFromUnknown, update.Id));
                 return false;
             }
-            if (update.Type is UpdateType.Message && msg.Type is not MessageType.Text)
+            if (update.Type is UpdateType.Message &&
+                msg.Type is not (MessageType.Text or MessageType.Photo or MessageType.Video or MessageType.Document))
             {
                 ShowWarning(botClient, msg, TextConsts.UpdateMessageTypeError);
                 return false;
