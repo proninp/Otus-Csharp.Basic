@@ -8,8 +8,6 @@ namespace MTLServiceBot.API
     internal class NavAPI
     {
         private static readonly HttpClient _httpClient = new();
-        private HttpResponseMessage? _httpResponse;
-        public string? _responseText;
 
         public NavAPI() 
         {
@@ -25,68 +23,79 @@ namespace MTLServiceBot.API
         /// <returns>Ответ от сервера MS Dynamics Nav</returns>
         public async Task<(ApiResponseStatus status, string responseText)> SendServiceApiRequest(string authHeader, HttpMethod method, string apiUrl, JsonContent? content = null)
         {
-            _responseText = string.Empty;
+            var responseText = string.Empty;
+            var responseStatus = ApiResponseStatus.Error;
+
             try
             {
-                _httpResponse = await SendApiRequset(authHeader, method, apiUrl, content);
-                var task = GetApiResponse();
+                (responseStatus, responseText) = await SendApiRequset(authHeader, method, apiUrl, content);
             }
             catch (Exception ex)
             {
                 Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
             }
-            return (GetApiResponseStatus(), _responseText);
+            return (responseStatus, responseText);
         }
 
-        private async Task<HttpResponseMessage?> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, JsonContent? content)
+        private async Task<(ApiResponseStatus, string)> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, JsonContent? content)
         {
-            var request = new HttpRequestMessage(method, apiUrl);
+            using var request = new HttpRequestMessage(method, apiUrl);
             request.Headers.Add("Accept", AppConfig.AcceptHeader);
             request.Headers.Add("Authorization", authHeader);
             
             if (!method.Equals(HttpMethod.Get) && content is not null)
                 request.Content = content;
             Program.ColoredPrint(request.ToString()); // TODO Logging
-            var response = await _httpClient.SendAsync(request);
-            return response;
-        }
-
-        private async Task GetApiResponse()
-        {
-            if (_httpResponse is null || !_httpResponse.IsSuccessStatusCode)
+            var responseText = string.Empty;
+            var apiResponseStatus = ApiResponseStatus.Error;
+            using (var response = _httpClient.Send(request))
             {
-                LogHttpResponseError();
-                return;
+                responseText = await GetApiResponse(response);
+                apiResponseStatus = GetApiResponseStatus(response);
+                response.Dispose();
             }
-            Program.ColoredPrint(_httpResponse.ToString()); // TODO Logging
-            var jsonResponse = await _httpResponse.Content.ReadAsStringAsync();
-            if (string.IsNullOrEmpty(jsonResponse))
-                return;
-            JObject jObject = JObject.Parse(jsonResponse);
-            _responseText = jObject["value"]?.ToString();
+            return (apiResponseStatus, responseText);
         }
 
-        private ApiResponseStatus GetApiResponseStatus()
+        private async Task<string> GetApiResponse(HttpResponseMessage? httpResponse)
         {
-            if (_httpResponse is not null)
+            if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
             {
-                if (_httpResponse.IsSuccessStatusCode)
+                LogHttpResponseError(httpResponse);
+                return string.Empty;
+            }
+            
+            Program.ColoredPrint(httpResponse.ToString()); // TODO Logging
+            using var responseContent = httpResponse.Content;
+            var jsonResponse = await responseContent.ReadAsStringAsync();
+            if (string.IsNullOrEmpty(jsonResponse))
+                return string.Empty;
+            
+            JObject jObject = JObject.Parse(jsonResponse);
+            return jObject["value"]?.ToString() ?? "";
+        }
+
+        private ApiResponseStatus GetApiResponseStatus(HttpResponseMessage? response)
+        {
+            if (response is not null)
+            {
+                if (response.IsSuccessStatusCode)
                     return ApiResponseStatus.Success;
-                if (_httpResponse.StatusCode == HttpStatusCode.Unauthorized)
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
                     return ApiResponseStatus.Unauthorized;
             }
             return ApiResponseStatus.Error;
         }
 
-        private void LogHttpResponseError()
+        private void LogHttpResponseError(HttpResponseMessage? httpResponse)
         {
             // TODO Logging
             var sb = new StringBuilder();
-            sb.AppendLine($"{nameof(_httpResponse)} error at {DateTime.Now}");
-            if (_httpResponse is not null)
-                sb.AppendLine(_httpResponse.ToString());
+            sb.AppendLine($"{nameof(httpResponse)} error at {DateTime.Now}");
+            if (httpResponse is not null)
+                sb.AppendLine(httpResponse.ToString());
             else
-                sb.AppendLine($"{nameof(_httpResponse)} is null");
+                sb.AppendLine($"{nameof(httpResponse)} is null");
             Program.ColoredPrint(sb.ToString(), ConsoleColor.Red);
         }
     }

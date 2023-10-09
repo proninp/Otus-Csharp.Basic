@@ -96,14 +96,14 @@ namespace MTLServiceBot.API.Entities
             });
         }
 
-        public JsonContent GetNewFileContent(string fileName, string fileContent, string fileDescription = "")
+        public JsonContent GetNewFileContent(string fileName, StringBuilder fileContent, string fileDescription = "")
         {
             return JsonContent.Create(new
             {
                 serviceRequestNo = RequestNo,
                 fileName,
                 fileDescription,
-                fileContent
+                fileContent = fileContent.ToString()
             });
         }
 

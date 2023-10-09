@@ -2,8 +2,8 @@
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
+using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -101,7 +101,7 @@ namespace MTLServiceBot.Bot.Commands
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
                     _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                _ = botClient.SendTextMessageAsync(update.Chat, response.Message, parseMode);
+                _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
                 return false;
             }
             return true;
@@ -175,7 +175,7 @@ namespace MTLServiceBot.Bot.Commands
             }
 
             string? fileId = GetAttachmentFileId(update);
-            
+
             if (string.IsNullOrEmpty(fileId))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
@@ -195,7 +195,7 @@ namespace MTLServiceBot.Bot.Commands
             }
 
             var filePath = fileInfo.FilePath;
-            var filename = $"{serviceTask.RequestNo}_{serviceTask.TaskNo}_{Path.GetFileName(filePath)}";
+            var filename = $"{serviceTask.RequestNo}-{serviceTask.TaskNo} {Path.GetFileName(filePath)}";
             var destinationFilePath = Path.Combine(_downloadedFilesDirectory, update.From.Id.ToString(), filename);
             if (!await DownloadFileAsync(botClient, update, replyButtons, taskId, filePath, destinationFilePath))
                 return;
@@ -249,8 +249,10 @@ namespace MTLServiceBot.Bot.Commands
             var dir = Path.GetDirectoryName(destinationFilePath);
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            using Stream fileStream = File.Create(destinationFilePath);
-            await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
+            using (Stream fileStream = File.Create(destinationFilePath))
+            {
+                await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
+            }
             if (!File.Exists(destinationFilePath))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
@@ -265,16 +267,25 @@ namespace MTLServiceBot.Bot.Commands
         private async Task AddNewTaskFileApiRequestAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
             ServiceTask task, string filename, string destinationFilePath)
         {
-            string base64Content = Convert.ToBase64String(File.ReadAllBytes(destinationFilePath));
-            var response = await _api.AddNewFileToServiceTask(session, task, filename, base64Content);
+            var fileBase64Content = new StringBuilder(Convert.ToBase64String(File.ReadAllBytes(destinationFilePath)));
+            var response = await _api.AddNewFileToServiceTask(session, task, filename, fileBase64Content);
             if (response.IsSuccess)
             {
+                try
+                {
+                    File.Delete(destinationFilePath);
+                }
+                catch (Exception ex)
+                {
+                    Program.ColoredPrint(ex.Message, ConsoleColor.Red);
+                }
                 _ = botClient.SendTextMessageAsync(update.Chat, string.Format(TextConsts.AddFileHandleAddedMsg, task.Id, filename),
                     parseMode: ParseMode.Html);
                 return;
             }
-            _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
             
+            _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
+
         }
     }
 }

@@ -3,6 +3,7 @@ using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Net.Http.Json;
+using System.Text;
 
 namespace MTLServiceBot.API
 {
@@ -77,7 +78,7 @@ namespace MTLServiceBot.API
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
                 _setTaskStatusApiUrl, task.GetNewStatusContent());
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string fileName, string fileContent)
+        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string fileName, StringBuilder fileContent)
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
                 _addFileApiUrl, task.GetNewFileContent(fileName, fileContent));
 
