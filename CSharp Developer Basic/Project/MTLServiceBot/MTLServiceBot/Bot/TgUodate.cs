@@ -23,5 +23,13 @@ namespace MTLServiceBot.Bot
             CallbackQuery = callbackQuery;
             
         }
+
+        public bool HasAttachment() =>
+            Message.Type is (MessageType.Photo or
+            MessageType.Video or
+            MessageType.Document) &&
+            (Message.Photo is not null ||
+            Message.Video is not null ||
+            Message.Document is not null);
     }
 }

@@ -96,7 +96,7 @@ namespace MTLServiceBot.API.Entities
             });
         }
 
-        public JsonContent GetNewFileContent(string fileName, string fileDescription, string fileContent)
+        public JsonContent GetNewFileContent(string fileName, string fileContent, string fileDescription = "")
         {
             return JsonContent.Create(new
             {

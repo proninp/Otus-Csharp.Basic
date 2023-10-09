@@ -1,6 +1,7 @@
 ﻿using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
+using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Text.Json;
 using Telegram.Bot;
@@ -13,10 +14,12 @@ namespace MTLServiceBot.Bot.Commands
     public partial class ServiceRequest : Command
     {
         private readonly ServiceAPI _api;
+        private readonly string _downloadedFilesDirectory;
 
         public ServiceRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
             _api = ServiceAPI.GetInstance();
+            _downloadedFilesDirectory = ConfigRepository.GetDownloadedFilesDirectory();
         }
 
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
@@ -40,16 +43,18 @@ namespace MTLServiceBot.Bot.Commands
                 return;
             }
 
+            CheckForServiceWorkFlowStepChange(update, session);
+
             switch (update.UpdateType)
             {
                 case UpdateType.Message:
                     if (session.WorkFlowState == WorkFlow.ServiceRequests)
                         SendSingleTaskInfo(botClient, update.Message, serviceTasksList!, replyButtons);
                     else if (session.WorkFlowState == WorkFlow.ServiceRequestAddFile)
-                        HandleAddNewFileCall(botClient, update, session, serviceTasksList!, replyButtons);
+                        HandleAddNewFileCallAsync(botClient, update, session, serviceTasksList!, replyButtons);
                     break;
                 case UpdateType.CallbackQuery:
-                    _ = HandleCallBackDataUpdate(botClient, update, session, serviceTasksList!, replyButtons);
+                    _ = HandleCallBackDataUpdateAsync(botClient, update, session, serviceTasksList!, replyButtons);
                     break;
             }
         }
@@ -147,6 +152,20 @@ namespace MTLServiceBot.Bot.Commands
             var replyKB = new ReplyKeyboardMarkup(rows.ToArray());
             replyKB.ResizeKeyboard = true;
             return replyKB;
+        }
+
+        private void CheckForServiceWorkFlowStepChange(TgUpdate update, Session session)
+        {
+            if (session.WorkFlowState == WorkFlow.ServiceRequestAddFile)
+            {
+                if (update.UpdateType == UpdateType.CallbackQuery ||
+                    (!update.HasAttachment() &&
+                    !string.IsNullOrEmpty(update.Message.Text)))
+                {
+                    session.WorkFlowState = WorkFlow.ServiceRequests;
+                    session.WorkFlowTaskId = "";
+                }
+            }
         }
     }
 }

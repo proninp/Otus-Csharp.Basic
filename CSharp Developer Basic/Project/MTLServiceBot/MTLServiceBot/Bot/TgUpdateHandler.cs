@@ -37,7 +37,12 @@ namespace MTLServiceBot.Bot
             var helpCommadInfo = _commands.Select(c => (c.Name, c.Description));
             _commands.Add(new Help(TextConsts.HelpCommandName, TextConsts.HelpCommandDescription, false, helpCommadInfo));
             _commands.Add(_unknownCommand);
-            _workflows = new() { { WorkFlow.Login, _login }, { WorkFlow.ServiceRequests, _serviceTasksRequest } };
+            _workflows = new() 
+            { 
+                { WorkFlow.Login, _login },
+                { WorkFlow.ServiceRequests, _serviceTasksRequest },
+                { WorkFlow.ServiceRequestAddFile, _serviceTasksRequest },
+            };
         }
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)

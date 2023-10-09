@@ -3,6 +3,7 @@
 	[Bot Id] [nvarchar](20) NOT NULL,
 	[Bot Token] [nvarchar](50) NOT NULL,
 	[API Url] [nvarchar](100) NOT NULL,
+	[Files Destination Directory] [nvarchar](250) NOT NULL,
  CONSTRAINT [Tg Application Setup$0] PRIMARY KEY CLUSTERED ([Bot Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,

@@ -3,10 +3,12 @@ using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
+using File = System.IO.File;
 
 namespace MTLServiceBot.Bot.Commands
 {
@@ -33,13 +35,12 @@ namespace MTLServiceBot.Bot.Commands
             return new InlineKeyboardMarkup(inlineKeyboard);
         }
 
-        private async Task HandleCallBackDataUpdate(ITelegramBotClient botClient, TgUpdate update, Session session,
+        private async Task HandleCallBackDataUpdateAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
             List<ServiceTask> serviceTasksList, IReplyMarkup replyButtons)
         {
             (string cmdTaskId, CallbackCommand command) = ParseCallbackCommandData(update.CallbackQuery);
             if (string.IsNullOrEmpty(cmdTaskId) || command == CallbackCommand.None)
                 return;
-
 
             var serviceTask = serviceTasksList.FirstOrDefault(st => st.Id == cmdTaskId);
             if (serviceTask is null)
@@ -56,8 +57,8 @@ namespace MTLServiceBot.Bot.Commands
             switch (command)
             {
                 case CallbackCommand.ChangeStatus:
-                    if (await ChangeTaskStatus(botClient, update, session, serviceTask))
-                        _ = UpdateSingleTaskInfo(botClient, update, session, serviceTask);
+                    if (await ChangeTaskStatusApiRequestAsync(botClient, update, session, serviceTask))
+                        _ = UpdateSingleTaskInfoAsync(botClient, update, session, serviceTask);
                     break;
                 case CallbackCommand.AddFile:
                     AddNewFileCall(botClient, update, session, serviceTask.Id);
@@ -92,23 +93,24 @@ namespace MTLServiceBot.Bot.Commands
             return (dataList[1], command);
         }
 
-        private async Task<bool> ChangeTaskStatus(ITelegramBotClient botClient, TgUpdate update, Session session, ServiceTask task)
+        private async Task<bool> ChangeTaskStatusApiRequestAsync(ITelegramBotClient botClient, TgUpdate update,
+            Session session, ServiceTask serviceTask)
         {
-            var response = await _api.ChangeServiceTaskStatus(session, task);
+            var response = await _api.ChangeServiceTaskStatus(session, serviceTask);
             if (!response.IsSuccess)
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
                     _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
+                _ = botClient.SendTextMessageAsync(update.Chat, response.Message, parseMode);
                 return false;
             }
             return true;
         }
 
-        private async Task<bool> UpdateSingleTaskInfo(ITelegramBotClient botClient, TgUpdate update, Session session, ServiceTask task)
+        private async Task<bool> UpdateSingleTaskInfoAsync(ITelegramBotClient botClient, TgUpdate update, Session session, ServiceTask task)
         {
             // Делаем запрос для получения обновленной информации по сервисной задаче
-            var serviceTask = await UpdateSingleServiceTaskInfo(session, task.Id);
+            var serviceTask = await UpdateSingleServiceTaskInfoAsync(session, task.Id);
             if (serviceTask is null)
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
@@ -124,7 +126,7 @@ namespace MTLServiceBot.Bot.Commands
             return true;
         }
 
-        private async Task<ServiceTask?> UpdateSingleServiceTaskInfo(Session session, string taskId)
+        private async Task<ServiceTask?> UpdateSingleServiceTaskInfoAsync(Session session, string taskId)
         {
             ServiceTask? serviceTask = null;
             if (string.IsNullOrEmpty(taskId) || !taskId.Contains(TextConsts.SingleTaskNumberFormatSeparator))
@@ -135,6 +137,7 @@ namespace MTLServiceBot.Bot.Commands
             var response = await _api.GetServiceTask(session, taskIdParts[0], taskIdParts[1]);
             if (!response.IsSuccess)
                 return serviceTask;
+
             try
             {
                 serviceTask = JsonSerializer.Deserialize<List<ServiceTask>>(response.ResponseText)?.FirstOrDefault();
@@ -155,21 +158,13 @@ namespace MTLServiceBot.Bot.Commands
                     parseMode: ParseMode.Html);
         }
 
-        private async void HandleAddNewFileCall(ITelegramBotClient botClient, TgUpdate update, Session session,
+        private async void HandleAddNewFileCallAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
             List<ServiceTask> serviceTasksList, IReplyMarkup replyButtons)
         {
-            var currentWorkFlowState = session.WorkFlowState;
-            var taskId = session.WorkFlowTaskId;
-            session.WorkFlowState = WorkFlow.ServiceRequests;
-            if (currentWorkFlowState != WorkFlow.ServiceRequestAddFile || string.IsNullOrEmpty(taskId))
-            {
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    TextConsts.CBCmdAddFileCallHandlerError,
-                    parseMode: ParseMode.Html);
+            if (!CheckAddNewFileCallParams(botClient, update, session, replyButtons, out string taskId))
                 return;
-            }
-            var serviceTask = serviceTasksList.FirstOrDefault(st => st.Id == taskId);
 
+            var serviceTask = serviceTasksList.FirstOrDefault(st => st.Id == taskId);
             if (serviceTask is null)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
@@ -179,21 +174,59 @@ namespace MTLServiceBot.Bot.Commands
                 return;
             }
 
-            if ((update.Message.Type is not (
-                MessageType.Photo or
-                MessageType.Video or
-                MessageType.Document)) ||
-                (update.Message.Photo is null &&
-                update.Message.Video is null &&
-                update.Message.Document is null))
+            string? fileId = GetAttachmentFileId(update);
+            
+            if (string.IsNullOrEmpty(fileId))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdAddFileCallHandlerFileError, taskId),
+                    string.Format(TextConsts.AddFileHandleIdError, taskId),
+                    parseMode: ParseMode.Html,
+                    replyMarkup: replyButtons);
+                return;
+            }
+            var fileInfo = await botClient.GetFileAsync(fileId);
+            if (fileInfo?.FilePath is null)
+            {
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    string.Format(TextConsts.AddFileHandleReceiveError, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
                 return;
             }
 
+            var filePath = fileInfo.FilePath;
+            var filename = $"{serviceTask.RequestNo}_{serviceTask.TaskNo}_{Path.GetFileName(filePath)}";
+            var destinationFilePath = Path.Combine(_downloadedFilesDirectory, update.From.Id.ToString(), filename);
+            if (!await DownloadFileAsync(botClient, update, replyButtons, taskId, filePath, destinationFilePath))
+                return;
+            await AddNewTaskFileApiRequestAsync(botClient, update, session, serviceTask, filename, destinationFilePath);
+        }
+
+        private bool CheckAddNewFileCallParams(ITelegramBotClient botClient, TgUpdate update, Session session,
+            IReplyMarkup replyButtons, out string taskId)
+        {
+            taskId = session.WorkFlowTaskId;
+            if (session.WorkFlowState != WorkFlow.ServiceRequestAddFile || string.IsNullOrEmpty(taskId))
+            {
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    TextConsts.CBCmdAddFileCallHandlerError,
+                    parseMode: ParseMode.Html);
+                return false;
+            }
+
+            if (!update.HasAttachment())
+            {
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    string.Format(TextConsts.CBCmdAddFileCallHandlerFileError, taskId),
+                    parseMode: ParseMode.Html,
+                    replyMarkup: replyButtons);
+                return false;
+            }
+            return true;
+        }
+
+        private string? GetAttachmentFileId(TgUpdate update)
+        {
             string? fileId = null;
             switch (update.Message.Type)
             {
@@ -207,16 +240,41 @@ namespace MTLServiceBot.Bot.Commands
                     fileId = update.Message?.Document?.FileId;
                     break;
             }
-            if (string.IsNullOrEmpty(fileId))
+            return fileId;
+        }
+
+        private async Task<bool> DownloadFileAsync(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons,
+            string taskId, string filePath, string destinationFilePath)
+        {
+            var dir = Path.GetDirectoryName(destinationFilePath);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            using Stream fileStream = File.Create(destinationFilePath);
+            await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
+            if (!File.Exists(destinationFilePath))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdAddFileCallHandlerFileIdError, taskId),
+                    string.Format(TextConsts.AddFileHandleDownloadError, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
+                return false;
+            }
+            return true;
+        }
+
+        private async Task AddNewTaskFileApiRequestAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
+            ServiceTask task, string filename, string destinationFilePath)
+        {
+            string base64Content = Convert.ToBase64String(File.ReadAllBytes(destinationFilePath));
+            var response = await _api.AddNewFileToServiceTask(session, task, filename, base64Content);
+            if (response.IsSuccess)
+            {
+                _ = botClient.SendTextMessageAsync(update.Chat, string.Format(TextConsts.AddFileHandleAddedMsg, task.Id, filename),
+                    parseMode: ParseMode.Html);
                 return;
             }
-            var fileInfo = await botClient.GetFileAsync(fileId);
-            var filePath = fileInfo.FilePath;
+            _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
+            
         }
     }
 }
