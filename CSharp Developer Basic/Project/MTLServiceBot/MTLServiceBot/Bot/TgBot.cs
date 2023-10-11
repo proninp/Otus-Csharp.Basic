@@ -1,4 +1,5 @@
-﻿using MTLServiceBot.Bot.Commands;
+﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Bot.Commands;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -21,7 +22,7 @@ namespace MTLServiceBot.Bot
 
         public void RunBot()
         {
-            Program.ColoredPrint("Запущен бот " + _bot.TgUser.FirstName);
+            AssistLog.ColoredPrint("Запущен бот " + _bot.TgUser.FirstName);
             var cts = new CancellationTokenSource();
 
             RegisterCommands();

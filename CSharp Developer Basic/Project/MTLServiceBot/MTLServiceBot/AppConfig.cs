@@ -13,6 +13,8 @@ namespace MTLServiceBot
         public static readonly string? SetupId = Environment.GetEnvironmentVariable("MTL_S_BOT_ID");
         public static readonly string ConnectionString = $"Data Source={DbHost};Initial Catalog={DbName};User ID={DbUser};" +
             $"Password={DbPass};Integrated Security=SSPI;TrustServerCertificate=True;";
-        public static string AcceptHeader = "application/json";
+        public static string AcceptHeaderName = "Accept";
+        public static string AcceptHeaderValue = "application/json";
+        public static string AuthHeaderName = "Authorization";
     }
 }

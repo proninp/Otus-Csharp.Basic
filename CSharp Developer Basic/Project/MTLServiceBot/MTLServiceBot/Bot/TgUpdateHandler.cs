@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.Assistants;
 using MTLServiceBot.Bot.Commands;
+using MTLServiceBot.Bot.Commands.ServiceRequest;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -55,10 +56,11 @@ namespace MTLServiceBot.Bot
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, TgUpdate update, CancellationToken cancellationToken)
         {
+
             var commandText = update.Message!.Text ?? "";
-            Program.ColoredPrint(string.Format(TextConsts.UpdateNewReceivingLog, update.UpdateType.ToString(),
-                update.Chat!.Id, update.From!.Id, commandText),
-                ConsoleColor.Magenta);
+            var logText = string.Format(TextConsts.UpdateNewReceivingLog, update.UpdateType.ToString(),
+                update.Chat!.Id, update.From!.Id, update.From.Username, commandText);
+            AssistLog.ColoredPrint(logText, LogStatus.Warning);
 
             Session session = GetUserSession(update);
             Command command = GetCommand(commandText, session);
@@ -70,8 +72,7 @@ namespace MTLServiceBot.Bot
             }
             catch (Exception e)
             {
-                Program.ColoredPrint(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message),
-                    ConsoleColor.Red); // TODO Logging
+                AssistLog.ColoredPrint(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message), LogStatus.Error);
             }
         }
 
@@ -144,7 +145,7 @@ namespace MTLServiceBot.Bot
 
         private void ShowWarning(ITelegramBotClient botClient, Message? msg, string warningText)
         {
-            Program.ColoredPrint(warningText, ConsoleColor.Red); // TODO Log
+            AssistLog.ColoredPrint(warningText, LogStatus.Error);
             if (msg is not null && msg.Chat is not null)
                 botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
         }

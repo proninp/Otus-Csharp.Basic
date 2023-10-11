@@ -4,22 +4,25 @@ using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace MTLServiceBot.Bot.Commands
+namespace MTLServiceBot.Bot.Commands.ServiceRequest
 {
     public partial class ServiceRequest : Command
     {
         private readonly ServiceAPI _api;
-        private readonly string _downloadedFilesDirectory;
+        private readonly string _tgFilesDirectory;
+        private readonly string _sharedNetworkDirectory;
 
         public ServiceRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
             _api = ServiceAPI.GetInstance();
-            _downloadedFilesDirectory = ConfigRepository.GetDownloadedFilesDirectory();
+            _tgFilesDirectory = ConfigRepository.GetDownloadedFilesDirectory();
+            _sharedNetworkDirectory = ConfigRepository.GetSharedNetworkDirectory();
         }
 
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
@@ -68,7 +71,7 @@ namespace MTLServiceBot.Bot.Commands
             }
             catch (Exception ex)
             {
-                Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
+                AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
                 _ = botClient.SendTextMessageAsync(update.Chat,
                     TextConsts.DeserializeJsonError,
                     replyMarkup: new ReplyKeyboardRemove());
@@ -167,5 +170,6 @@ namespace MTLServiceBot.Bot.Commands
                 }
             }
         }
+        
     }
 }

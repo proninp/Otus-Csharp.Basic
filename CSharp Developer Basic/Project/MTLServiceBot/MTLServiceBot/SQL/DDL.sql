@@ -3,7 +3,8 @@
 	[Bot Id] [nvarchar](20) NOT NULL,
 	[Bot Token] [nvarchar](50) NOT NULL,
 	[API Url] [nvarchar](100) NOT NULL,
-	[Files Destination Directory] [nvarchar](250) NOT NULL,
+	[Tg Files Download Path] [nvarchar](250) NOT NULL,
+	[Service Files Network Path] [nvarchar](250) NULL,
  CONSTRAINT [Tg Application Setup$0] PRIMARY KEY CLUSTERED ([Bot Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,
@@ -12,6 +13,7 @@
 	ALLOW_PAGE_LOCKS = ON,
 	OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY])
 ON [PRIMARY]
+GO;
 
 CREATE TABLE [dbo].[Tg User Sessions](
 	[timestamp] [timestamp] NOT NULL,
@@ -74,4 +76,4 @@ CREATE TABLE [dbo].[Tg Web Requests Ledger](
 	ALLOW_PAGE_LOCKS = ON,
 	OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
-GO
+GO;

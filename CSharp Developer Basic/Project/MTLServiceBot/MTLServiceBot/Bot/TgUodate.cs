@@ -1,5 +1,4 @@
-﻿using MTLServiceBot.Users;
-using Telegram.Bot.Types;
+﻿using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
 namespace MTLServiceBot.Bot
@@ -21,7 +20,18 @@ namespace MTLServiceBot.Bot
             From = from;
             Message = message;
             CallbackQuery = callbackQuery;
-            
+        }
+
+        public string GetUserName()
+        {
+            string username = "";
+            if (string.IsNullOrEmpty(From.FirstName) && string.IsNullOrEmpty(From.LastName))
+                username = $"{From.FirstName} {From.LastName}";
+            else if (string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(From.Username))
+                username = From.Username;
+            else
+                username = From.Id.ToString();
+            return username;
         }
 
         public bool HasAttachment() =>

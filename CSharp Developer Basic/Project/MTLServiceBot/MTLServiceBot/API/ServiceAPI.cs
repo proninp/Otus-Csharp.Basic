@@ -2,8 +2,6 @@
 using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
-using System.Net.Http.Json;
-using System.Text;
 
 namespace MTLServiceBot.API
 {
@@ -78,17 +76,16 @@ namespace MTLServiceBot.API
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
                 _setTaskStatusApiUrl, task.GetNewStatusContent());
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string fileName, StringBuilder fileContent)
-            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
-                _addFileApiUrl, task.GetNewFileContent(fileName, fileContent));
-
+        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string filename, string contentFilePath) =>
+            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addFileApiUrl,
+                task.GetNewFileContent(filename, Convert.ToBase64String(System.IO.File.ReadAllBytes(contentFilePath))));
 
         private async Task<ApiResponse> SendServiceRequest(
-            Func<string, HttpMethod, string, JsonContent?, Task<(ApiResponseStatus status, string responseText)>> request,
+            Func<string, HttpMethod, string, HttpContent?, Task<(ApiResponseStatus status, string responseText)>> request,
             Session session,
             HttpMethod httpMethod,
             string apiUrl,
-            JsonContent? content = null)
+            HttpContent? content = null)
         {
             ApiResponse authResponse;
             // Если после перезапуска приложения для сохраненной сессии еще не был получен новый токен

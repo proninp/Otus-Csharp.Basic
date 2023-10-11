@@ -16,12 +16,6 @@ namespace MTLServiceBot
             Console.ReadKey();
         }
 
-        public static void ColoredPrint(string text, ConsoleColor color = ConsoleColor.DarkCyan)
-        {
-            var currentColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.WriteLine(text);
-            Console.ForegroundColor = currentColor;
-        }
+        
     }
 }

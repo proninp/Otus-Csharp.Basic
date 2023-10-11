@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using MTLServiceBot.Assistants;
+using Newtonsoft.Json.Linq;
 using System.Net;
-using System.Net.Http.Json;
 using System.Text;
 
 namespace MTLServiceBot.API
@@ -9,7 +9,7 @@ namespace MTLServiceBot.API
     {
         private static readonly HttpClient _httpClient = new();
 
-        public NavAPI() 
+        public NavAPI()
         {
         }
 
@@ -21,7 +21,8 @@ namespace MTLServiceBot.API
         /// <param name="apiUrl">Адрес URL</param>
         /// <param name="content">Содержимое сообщения</param>
         /// <returns>Ответ от сервера MS Dynamics Nav</returns>
-        public async Task<(ApiResponseStatus status, string responseText)> SendServiceApiRequest(string authHeader, HttpMethod method, string apiUrl, JsonContent? content = null)
+        public async Task<(ApiResponseStatus status, string responseText)> SendServiceApiRequest(string authHeader, HttpMethod method,
+            string apiUrl, HttpContent? content = null)
         {
             var responseText = string.Empty;
             var responseStatus = ApiResponseStatus.Error;
@@ -32,27 +33,25 @@ namespace MTLServiceBot.API
             }
             catch (Exception ex)
             {
-                Program.ColoredPrint(ex.ToString(), ConsoleColor.Red); // TODO Logging
+                AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
             }
             return (responseStatus, responseText);
         }
 
-        private async Task<(ApiResponseStatus, string)> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, JsonContent? content)
+        private async Task<(ApiResponseStatus, string)> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, HttpContent? content)
         {
             using var request = new HttpRequestMessage(method, apiUrl);
-            request.Headers.Add("Accept", AppConfig.AcceptHeader);
-            request.Headers.Add("Authorization", authHeader);
-            
+            AddRequestHeaders(request, authHeader);
+
             if (!method.Equals(HttpMethod.Get) && content is not null)
                 request.Content = content;
-            Program.ColoredPrint(request.ToString()); // TODO Logging
+            AssistLog.ColoredPrint(request.ToString()); // TODO Logging
             var responseText = string.Empty;
             var apiResponseStatus = ApiResponseStatus.Error;
-            using (var response = _httpClient.Send(request))
+            using (var response = await _httpClient.SendAsync(request))
             {
                 responseText = await GetApiResponse(response);
                 apiResponseStatus = GetApiResponseStatus(response);
-                response.Dispose();
             }
             return (apiResponseStatus, responseText);
         }
@@ -64,13 +63,12 @@ namespace MTLServiceBot.API
                 LogHttpResponseError(httpResponse);
                 return string.Empty;
             }
-            
-            Program.ColoredPrint(httpResponse.ToString()); // TODO Logging
+            AssistLog.ColoredPrint(httpResponse.ToString()); // TODO Logging
             using var responseContent = httpResponse.Content;
             var jsonResponse = await responseContent.ReadAsStringAsync();
             if (string.IsNullOrEmpty(jsonResponse))
                 return string.Empty;
-            
+
             JObject jObject = JObject.Parse(jsonResponse);
             return jObject["value"]?.ToString() ?? "";
         }
@@ -91,12 +89,18 @@ namespace MTLServiceBot.API
         {
             // TODO Logging
             var sb = new StringBuilder();
-            sb.AppendLine($"{nameof(httpResponse)} error at {DateTime.Now}");
+            sb.AppendLine($"{nameof(httpResponse)} ошибка в {DateTime.Now}");
             if (httpResponse is not null)
                 sb.AppendLine(httpResponse.ToString());
             else
-                sb.AppendLine($"{nameof(httpResponse)} is null");
-            Program.ColoredPrint(sb.ToString(), ConsoleColor.Red);
+                sb.AppendLine($"{nameof(httpResponse)} = null");
+            AssistLog.ColoredPrint(sb.ToString(), LogStatus.Error);
+        }
+
+        private void AddRequestHeaders(HttpRequestMessage request, string authHeader)
+        {
+            request.Headers.Add(AppConfig.AcceptHeaderName, AppConfig.AcceptHeaderValue);
+            request.Headers.Add(AppConfig.AuthHeaderName, authHeader);
         }
     }
 }
