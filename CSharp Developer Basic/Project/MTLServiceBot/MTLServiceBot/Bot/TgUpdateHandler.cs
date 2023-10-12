@@ -101,6 +101,12 @@ namespace MTLServiceBot.Bot
                 ShowWarning(botClient, msg, TextConsts.UpdateMessageTypeError);
                 return false;
             }
+            if (from.IsBot)
+            {
+                var logMsg = string.Format(TextConsts.UpdateMessageFromBotError, msg.Chat.Id, from.Id, from.Username, msg.Text);
+                AssistLog.ColoredPrint(logMsg, LogStatus.Attention);
+                return false;
+            }
             return true;
         }
 

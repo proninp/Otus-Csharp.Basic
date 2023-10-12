@@ -107,6 +107,17 @@ namespace MTLServiceBot.API.Entities
             });
         }
 
+        public JsonContent GetNewFileInfoContent(string fileName, string filePath, string fileDescription = "")
+        {
+            return JsonContent.Create(new
+            {
+                serviceRequestNo = RequestNo,
+                fileName,
+                fileDescription,
+                filePath,
+            });
+        }
+
         public string ToMarkedDownString()
         {
             var sb = new StringBuilder();
@@ -149,7 +160,7 @@ namespace MTLServiceBot.API.Entities
         private void AppendMarkDownParameterLine(StringBuilder sb, string name, string value)
         {
             if (!string.IsNullOrEmpty(value))
-                sb.AppendLine($"<code>{name}:</code> {value}");
+                sb.AppendLine($"{name}: <code>{value}</code>");
         }
 
         private void WriteProperty(JsonWriter writer, string name, string value)

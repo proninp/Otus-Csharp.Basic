@@ -2,7 +2,6 @@
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 using System.Net;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -65,10 +64,10 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var copyResult = CopyFileToSharedNetworkDirectory(session, localFilePath, networkFileDirectory);
             if (!copyResult.result)
             {
-                SendNotification(botClient, update, replyButtons, string.Format(TextConsts.AddFileHandleCopyError, taskId), copyResult.exceptionText, LogStatus.Error);
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.AddFileHandleCopyError, taskId), LogStatus.Error, copyResult.exceptionText);
                 return;
             }
-            await AddNewTaskFileApiRequestAsync(botClient, update, session, serviceTask, destinationFilename, localFilePath);
+            await AddNewTaskFileApiRequestAsync(botClient, update, session, serviceTask, destinationFilename, networkFileDirectory);
         }
 
         private bool CheckAddNewFileCallParams(ITelegramBotClient botClient, TgUpdate update, Session session,
@@ -124,10 +123,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             if (!File.Exists(destinationFilePath))
             {
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.AddFileHandleDownloadError, taskId),
-                    parseMode: ParseMode.Html,
-                    replyMarkup: replyButtons);
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.AddFileHandleReceiveError, taskId));
                 return false;
             }
             return true;
@@ -151,21 +147,13 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
         }
 
         private async Task AddNewTaskFileApiRequestAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
-            ServiceTask task, string filename, string destinationFilePath)
+            ServiceTask task, string filename, string networkFileDirectory)
         {
-            var response = await _api.AddNewFileToServiceTask(session, task, filename, destinationFilePath);
+            var response = await _api.AddNewFileToServiceTask(session, task, filename, Path.Combine(networkFileDirectory, filename));
             if (!response.IsSuccess)
             {
-                _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
+                SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError, task.Id), LogStatus.Error, response.Message);
                 return;
-            }
-            try
-            {
-                File.Delete(destinationFilePath);
-            }
-            catch (Exception ex)
-            {
-                AssistLog.ColoredPrint(ex.Message, LogStatus.Error);
             }
             _ = botClient.SendTextMessageAsync(update.Chat,
                 string.Format(TextConsts.AddFileHandleAddedMsg, task.Id, filename),

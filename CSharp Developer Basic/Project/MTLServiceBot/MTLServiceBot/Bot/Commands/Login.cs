@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.API;
 using MTLServiceBot.Assistants;
+using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -10,7 +11,12 @@ namespace MTLServiceBot.Bot.Commands
 {
     public class Login : Command
     {
-        public Login(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication) { }
+        private readonly int _availableAuthAttemtsCount;
+
+        public Login(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication) 
+        { 
+            _availableAuthAttemtsCount = ConfigRepository.GetAvailabelAuthorizationCount();
+        }
 
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {

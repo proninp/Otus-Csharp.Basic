@@ -15,7 +15,7 @@ namespace MTLServiceBot.API
         private readonly string _serviceTasksApiUrl;
         private readonly string _serviceTaskApiUrl;
         private readonly string _setTaskStatusApiUrl;
-        private readonly string _addFileApiUrl;
+        private readonly string _addЕпFileInfo;
         private readonly string _getTaskFilesListUrl;
         private readonly string _addCommentApiUrl;
 
@@ -27,7 +27,7 @@ namespace MTLServiceBot.API
             _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
             _serviceTaskApiUrl = $"{_mailApiUrl}/ServiceEngineerRequestsAll" + "?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
             _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
-            _addFileApiUrl = $"{_mailApiUrl}/AddServiceFile";
+            _addЕпFileInfo = $"{_mailApiUrl}/AddTelegramFile";
             _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
             _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
         }
@@ -76,9 +76,9 @@ namespace MTLServiceBot.API
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
                 _setTaskStatusApiUrl, task.GetNewStatusContent());
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string filename, string contentFilePath) =>
-            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addFileApiUrl,
-                task.GetNewFileContent(filename, Convert.ToBase64String(System.IO.File.ReadAllBytes(contentFilePath))));
+        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string filename, string filePath) =>
+            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addЕпFileInfo,
+                task.GetNewFileInfoContent(filename, filePath));
 
         private async Task<ApiResponse> SendServiceRequest(
             Func<string, HttpMethod, string, HttpContent?, Task<(ApiResponseStatus status, string responseText)>> request,

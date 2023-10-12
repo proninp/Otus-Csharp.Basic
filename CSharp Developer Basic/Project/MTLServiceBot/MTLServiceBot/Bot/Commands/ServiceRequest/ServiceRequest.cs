@@ -30,7 +30,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var response = await _api.GetServiceTasks(session);
             if (!response.IsSuccess)
             {
-                _ = botClient.SendTextMessageAsync(update.Chat, response.Message, replyMarkup: new ReplyKeyboardRemove());
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), response.Message, LogStatus.Warning);
                 return;
             }
 
@@ -71,38 +71,28 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             catch (Exception ex)
             {
-                AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    TextConsts.DeserializeJsonError,
-                    replyMarkup: new ReplyKeyboardRemove());
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, LogStatus.Error, ex.ToString());
                 return false;
             }
 
             if (serviceTasksList is null || serviceTasksList.Count == 0)
             {
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    TextConsts.ServiceTasksListEmpty,
-                    replyMarkup: new ReplyKeyboardRemove());
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, LogStatus.Warning);
                 return false;
             }
             return true;
         }
 
-        private void SendMenuButtons(ITelegramBotClient botClient, Message message, IReplyMarkup replyButtons)
-        {
-            botClient.SendTextMessageAsync(message.Chat,
-                    TextConsts.ChooseServiceRequestBtn,
-                    replyMarkup: replyButtons);
-        }
+        private void SendMenuButtons(ITelegramBotClient botClient, Message message, IReplyMarkup replyButtons) =>
+            botClient.SendTextMessageAsync(message.Chat, TextConsts.ChooseServiceRequestBtn, replyMarkup: replyButtons);
 
         private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList, IReplyMarkup replyButtons)
         {
             var numberFormat = GetNumberRequestParts(message.Text ?? "");
             if (!numberFormat.isValidNumberFormat)
             {
-                botClient.SendTextMessageAsync(message.Chat, TextConsts.ServiceTasksWorkflowIncorrectFormat,
-                    parseMode: ParseMode.Html,
-                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
+                SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
+                    TextConsts.ServiceTasksWorkflowIncorrectFormat, LogStatus.Warning);
                 return;
             }
 
@@ -110,10 +100,9 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var taskNo = numberFormat.numberParts[1];
             if (!serviceTasksList.Any(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)))
             {
-                botClient.SendTextMessageAsync(message.Chat,
+                SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
                     string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
-                    parseMode: ParseMode.Html,
-                    replyMarkup: GetServiceTasksReplyButtons(serviceTasksList));
+                    LogStatus.Warning);
                 return;
             }
 

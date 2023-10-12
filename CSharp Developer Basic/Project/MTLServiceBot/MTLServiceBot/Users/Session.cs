@@ -11,6 +11,7 @@ namespace MTLServiceBot.Users
         public AuthStep AuthStep { get; set; }
         public bool IsAuthorized { get => CheckAuthorization(); }
         private bool _isAuthorized;
+        public int AvailableAuthorizationAttemts { get; set; }
         public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public string WorkFlowTaskId { get; set; }
         public DateTime LoginDatetime { get; set; }

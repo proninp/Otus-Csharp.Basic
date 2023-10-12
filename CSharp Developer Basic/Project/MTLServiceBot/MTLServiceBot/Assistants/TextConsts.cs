@@ -22,6 +22,7 @@
         public const string ConfigRepoApiLinkError = "Необходимо указать адрес API в таблице настроек Telegram бота";
         public const string ConfigRepoTgFilesError = "Необходимо указать директорию для скачивания файлов в таблице настроек Telegram бота";
         public const string ConfigRepoSharedNetworkError = "Необходимо указать сетевую директорию для размещения файлов в таблице настроек Telegram бота";
+        public const string ConfigRepoAvailAuthCountError = "Необходимо указать допустимое количество попыток авторизации в таблице настроек Telegram бота";
         public const string ConfigRepoAppSetupIdError = "Необходимо указать Id настройки бота";
 
         public const string StopCommandMsg = "До свидания, {0}! Позднее, мы очистим историю взаимодействий с ботом.";
@@ -42,7 +43,8 @@
         public const string UpdateFromUnknown = "Нераспознан пользователь в сообщении {0}";
         public const string UpdateTypeDataUnknown = "Нераспознан объект данных сообщения {0}";
         public const string UpdateMessageTypeError = $"Данный тип сообщений не поддерживается, для получения информации о работе бота воспользуйтесь командой {HelpCommandName}";
-        public const string UpdateNewReceivingLog = "Получена команда c типом [{0}] в чате [{1}] от: [{2}] - [{3}]. Текст: [{4}]";
+        public const string UpdateMessageFromBotError = "Получено сообщение в чате [{0}] от аккаунта [{1}], являющегося ботом с именем [{2}]:\n[{3}].\nСообщение от было проигнорировано.";
+        public const string UpdateNewReceivingLog = "Получена команда c типом [{0}] в чате [{1}] от: [{2}] - [{3}].\nТекст команды:\n[{4}]";
         public const string UpdateCommandExceptionTemplate = "Команда {0}, исключение: {1}";
 
         public const string UnknownCommand = $"Команда не распознана.\nДля получения списка команд введите {HelpCommandName}";
@@ -75,8 +77,7 @@
             "В полученном сообщении не найдено вложения допустимого типа";
         public const string AddFileHandleIdError = "Ошибка добавления файла для заявки <code>{0}</code> - невозможно распознать Id полученного файла";
         public const string AddFileHandleReceiveError = "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности получить файл от сервиса Telegram";
-        public const string AddFileHandleDownloadError = "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности скачать файл от сервиса Telegram";
-        public const string AddFileHandleCopyError = "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности сохранить полкченный файл, попробуйте выполнить действие позднее";
+        public const string AddFileHandleCopyError = "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности сохранить принятый файл, попробуйте выполнить действие позднее";
         public const string AddFileHandleAddedMsg = "К сервисной заявке <code>{0}</code> добавлен файл <code>{1}</code>";
 
         public const string CBCmdDataEmpty = "Ошибка обработки. CallBackQuery. Данные команды CallbackQuery не содержат информации.";
@@ -84,5 +85,8 @@
         public const string CBCmdDataNotRecognized = "Данные команды CallbackQuery не распознаны: '{0}'";
         public const string CBCmdServiceTaskNotFound = "Сервисная задача {0} не найдена в списке доступных задач.\n" +
             $"Выполните команду {ServiceTasksCommandName} повторно и попробуйте еще раз.";
+
+        public const string LogNotificationDescription = "Уведомление при выполнении команды {0}:";
+        public const string LogDescription = "Сообщение лога:\n{0}";
     }
 }

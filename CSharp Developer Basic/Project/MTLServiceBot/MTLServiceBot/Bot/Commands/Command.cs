@@ -2,6 +2,7 @@
 using MTLServiceBot.Users;
 using System.Text;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -36,20 +37,30 @@ namespace MTLServiceBot.Bot.Commands
         {
             await botClient.SendTextMessageAsync(messageData.Chat!, TextConsts.UnknownCommand, null, ParseMode.Markdown);
         }
-        protected virtual void SendNotification(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons,
-            string tgMessage, string logMessage = "", LogStatus logStatus = LogStatus.Information)
+
+        protected virtual void SendNotification(ITelegramBotClient botClient, Chat chat, IReplyMarkup? replyButtons,
+            string tgMessage, LogStatus logStatus = LogStatus.Information, string logMessage = "")
+        {
+            SendLogMessage(tgMessage, logStatus, logMessage);
+            if (replyButtons is not null)
+                _ = botClient.SendTextMessageAsync(chat, tgMessage, parseMode: ParseMode.Html, replyMarkup: replyButtons);
+            else
+                _ = botClient.SendTextMessageAsync(chat, tgMessage, parseMode: ParseMode.Html);
+        }
+
+        protected virtual void SendNotification(ITelegramBotClient botClient, Chat chat, string tgMessage,
+            LogStatus logStatus = LogStatus.Information, string logMessage = "") => 
+            SendNotification(botClient, chat, null, tgMessage, logStatus, logMessage);
+
+        private void SendLogMessage(string tgMessage, LogStatus logStatus = LogStatus.Information, string logMessage = "")
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Уведомление при выполнении команды {Name}:");
+            sb.AppendLine(string.Format(TextConsts.LogNotificationDescription, Name));
             sb.AppendLine(tgMessage);
-            AssistLog.ColoredPrint(sb.ToString());
             if (!string.IsNullOrEmpty(logMessage))
-                AssistLog.ColoredPrint(logMessage, logStatus);
-            
-            _ = botClient.SendTextMessageAsync(update.Chat,
-                tgMessage,
-                parseMode: ParseMode.Html,
-                replyMarkup: replyButtons);
+                sb.AppendLine(string.Format(TextConsts.LogDescription, logMessage));
+
+            AssistLog.ColoredPrint(sb.ToString(), logStatus);
         }
     }
 }

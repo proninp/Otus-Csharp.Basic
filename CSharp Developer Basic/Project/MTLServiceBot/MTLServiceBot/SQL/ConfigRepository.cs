@@ -23,39 +23,52 @@ namespace MTLServiceBot.SQL
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = $"SELECT [API Url] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = @botId";
-            var token = db.QueryFirstOrDefault<string>(query, new
+            var apiUrl = db.QueryFirstOrDefault<string>(query, new
             {
                 botId = GetSetupId()
             });
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(apiUrl))
                 throw new InvalidOperationException(TextConsts.ConfigRepoApiLinkError);
-            return token;
+            return apiUrl;
         }
 
         public static string GetDownloadedFilesDirectory()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = $"SELECT [Tg Files Download Path] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = @botId";
-            var token = db.QueryFirstOrDefault<string>(query, new
+            var localPath = db.QueryFirstOrDefault<string>(query, new
             {
                 botId = GetSetupId()
             });
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(localPath))
                 throw new InvalidOperationException(TextConsts.ConfigRepoTgFilesError);
-            return token;
+            return localPath;
         }
 
         public static string GetSharedNetworkDirectory()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var query = $"SELECT [Service Files Network Path] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = @botId";
-            var token = db.QueryFirstOrDefault<string>(query, new
+            var networkPath = db.QueryFirstOrDefault<string>(query, new
             {
                 botId = GetSetupId()
             });
-            if (string.IsNullOrEmpty(token))
+            if (string.IsNullOrEmpty(networkPath))
                 throw new InvalidOperationException(TextConsts.ConfigRepoSharedNetworkError);
-            return token;
+            return networkPath;
+        }
+
+        public static int GetAvailabelAuthorizationCount()
+        {
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            var query = $"SELECT [User Authorization Attempts] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = @botId";
+            var attemptsCount = db.QueryFirstOrDefault<int>(query, new
+            {
+                botId = GetSetupId()
+            });
+            if (attemptsCount == 0)
+                throw new InvalidOperationException(TextConsts.ConfigRepoAvailAuthCountError);
+            return attemptsCount;
         }
 
         private static string GetSetupId()

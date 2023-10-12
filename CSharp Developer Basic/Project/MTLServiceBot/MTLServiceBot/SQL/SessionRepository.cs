@@ -14,7 +14,8 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             return db.QueryFirstOrDefault<int>(query);
         }
-        public static bool CheckActiveSessionExists(this Session userSession)
+
+        public static bool CheckActiveSessionExists(this Session session)
         {
             var query = new StringBuilder();
             query.Append("SELECT COUNT(*) FROM [dbo].[Tg User Sessions] WHERE");
@@ -24,12 +25,13 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             var cnt = db.QueryFirstOrDefault<int>(query.ToString(), new
             {
-                userId = userSession.User.Id,
-                chatId = userSession.ChatId
+                userId = session.User.Id,
+                chatId = session.ChatId
             });
             return cnt > 0;
         }
-        public static void GetActiveSessionCredentials(this Session userSession)
+
+        public static void GetActiveSessionCredentials(this Session session)
         {
             var query = new StringBuilder();
             query.Append("SELECT TOP (1) [User Id] id, [Chat Id] chatId, [Login] login, [Password Cipher] password, [Login Datetime] loginDatetime");
@@ -39,13 +41,14 @@ namespace MTLServiceBot.SQL
             query.Append(" AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
             query.Append(" ORDER BY [Login Datetime] DESC");
             using var db = new SqlConnection(AppConfig.ConnectionString);
-            var session = db.QueryFirstOrDefault<Session>(query.ToString(), new
+            var dbSession = db.QueryFirstOrDefault<Session>(query.ToString(), new
             {
-                userId = userSession.User.Id,
-                chatId = userSession.ChatId
+                userId = session.User.Id,
+                chatId = session.ChatId
             });
-            userSession.SetCredentials(session);
+            session.SetCredentials(dbSession);
         }
+
         public static List<Session> GetActiveSessions()
         {
             using var db = new SqlConnection(AppConfig.ConnectionString);
@@ -55,7 +58,8 @@ namespace MTLServiceBot.SQL
             query.Append(" WHERE [Logout Datetime] = '1753-01-01 00:00:00.000'");
             return db.Query<Session>(query.ToString()).ToList();
         }
-        public static void Save(this Session userSession)
+        
+        public static void Save(this Session session)
         {
             var query = new StringBuilder();
             query.Append("INSERT INTO[dbo].[Tg User Sessions]");
@@ -64,17 +68,18 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             db.Execute(query.ToString(), new
             {
-                id = userSession.User.Id,
-                chatId = userSession.ChatId,
-                login = userSession.User.Login,
-                password = EncryptionHelper.Encrypt(userSession.User.Password, userSession.User.Id.ToString(), userSession.ChatId.ToString()),
-                loginDatetime = userSession.LoginDatetime,
-                logoutDatetime = userSession.LogoutDatetime
+                id = session.User.Id,
+                chatId = session.ChatId,
+                login = session.User.Login,
+                password = EncryptionHelper.Encrypt(session.User.Password, session.User.Id.ToString(), session.ChatId.ToString()),
+                loginDatetime = session.LoginDatetime,
+                logoutDatetime = session.LogoutDatetime
             });
         }
-        public static void LogoutSession(this Session userSession)
+
+        public static void LogoutSession(this Session session)
         {
-            if (!CheckActiveSessionExists(userSession))
+            if (!CheckActiveSessionExists(session))
                 return;
             StringBuilder query = new StringBuilder();
             query.Append("UPDATE [dbo].[Tg User Sessions] SET");
@@ -83,10 +88,15 @@ namespace MTLServiceBot.SQL
             using var db = new SqlConnection(AppConfig.ConnectionString);
             db.Execute(query.ToString(), new
             {
-                id = userSession.User.Id,
-                chatId = userSession.ChatId,
-                logoutDatetime = userSession.LogoutDatetime
+                id = session.User.Id,
+                chatId = session.ChatId,
+                logoutDatetime = session.LogoutDatetime
             });
+        }
+
+        public static bool CheckAuthAttemptsRecordExists(this Session session)
+        {
+            return true;
         }
     }
 }

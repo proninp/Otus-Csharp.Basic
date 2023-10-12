@@ -10,19 +10,19 @@ namespace MTLServiceBot.API.Entities
     public class ServiceTaskComment
     {
         [JsonPropertyName("masterText")]
-        public string? CommentText { get; set; }
+        public string CommentText { get; set; } = "";
         [JsonPropertyName("userCommentShort")]
-        public string? UserCommentText { get; set; }
+        public string UserCommentText { get; set; } = "";
         [JsonPropertyName("commentDT")]
-        public string? CommentDatetime { get; set; }
+        public string CommentDatetime { get; set; } = "";
         [JsonPropertyName("userCode")]
-        public string? UserCode { get; set; }
+        public string UserCode { get; set; } = "";
         [JsonPropertyName("userCommentLong")]
-        public string? CommentTextLong { get; set; }
+        public string CommentTextLong { get; set; } = "";
         public ServiceTaskComment() { }
         
-        public ServiceTaskComment(string? commentText, string? userCommentText = "",
-            string? commentDatetime = "", string? userCode = "", string? commentTextLong = "")
+        public ServiceTaskComment(string commentText, string userCommentText = "",
+            string commentDatetime = "", string userCode = "", string commentTextLong = "")
         {
             CommentText = commentText;
             UserCommentText = userCommentText;

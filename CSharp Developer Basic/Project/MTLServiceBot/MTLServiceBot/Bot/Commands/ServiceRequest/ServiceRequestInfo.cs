@@ -44,11 +44,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (serviceTask is null)
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdServiceTaskNotFound, cmdTaskId),
-                    parseMode: ParseMode.Html,
-                    replyMarkup: replyButtons);
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.CBCmdServiceTaskNotFound, cmdTaskId), LogStatus.Warning);
                 return;
             }
 
@@ -99,7 +95,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
                     _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                _ = botClient.SendTextMessageAsync(update.Chat, response.Message);
+                SendNotification(botClient, update.Chat, response.Message, LogStatus.Warning);
                 return false;
             }
             return true;
@@ -112,9 +108,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (serviceTask is null)
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo),
-                    parseMode: ParseMode.Html);
+                SendNotification(botClient, update.Chat,
+                    string.Format(TextConsts.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo), LogStatus.Warning);
                 return false;
             }
             // Выводим обновленную информацию в то же сообщение, обновляем кнопки

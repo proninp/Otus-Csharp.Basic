@@ -45,7 +45,7 @@ namespace MTLServiceBot.API
 
             if (!method.Equals(HttpMethod.Get) && content is not null)
                 request.Content = content;
-            AssistLog.ColoredPrint(request.ToString()); // TODO Logging
+            AssistLog.ColoredPrint(request.ToString(), LogStatus.Attention); // TODO Logging
             var responseText = string.Empty;
             var apiResponseStatus = ApiResponseStatus.Error;
             using (var response = await _httpClient.SendAsync(request))
@@ -63,7 +63,7 @@ namespace MTLServiceBot.API
                 LogHttpResponseError(httpResponse);
                 return string.Empty;
             }
-            AssistLog.ColoredPrint(httpResponse.ToString()); // TODO Logging
+            AssistLog.ColoredPrint(httpResponse.ToString(), LogStatus.Attention); // TODO Logging
             using var responseContent = httpResponse.Content;
             var jsonResponse = await responseContent.ReadAsStringAsync();
             if (string.IsNullOrEmpty(jsonResponse))
