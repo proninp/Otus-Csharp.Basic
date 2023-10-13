@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
+using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Net;
 using Telegram.Bot;
@@ -60,11 +61,14 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var localFilePath = Path.Combine(_tgFilesDirectory, update.From.Id.ToString(), destinationFilename);
             if (!await DownloadTgFileAsync(botClient, update, replyButtons, taskId, tgFilePath, localFilePath))
                 return;
+
             var networkFileDirectory = Path.Combine(_sharedNetworkDirectory, update.From.Id.ToString());
-            var copyResult = CopyFileToSharedNetworkDirectory(session, localFilePath, networkFileDirectory);
-            if (!copyResult.result)
+            var copyResult = CopyFileToSharedNetworkDirectory(localFilePath, networkFileDirectory);
+            if (!copyResult.isSuccess)
             {
-                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.AddFileHandleCopyError, taskId), LogStatus.Error, copyResult.exceptionText);
+                SendNotification(botClient, update.Chat, replyButtons,
+                    string.Format(TextConsts.AddFileHandleCopyError, taskId),
+                    LogStatus.Error, copyResult.exceptionText);
                 return;
             }
             await AddNewTaskFileApiRequestAsync(botClient, update, session, serviceTask, destinationFilename, networkFileDirectory);
@@ -129,13 +133,11 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             return true;
         }
 
-        private (bool result, string exceptionText) CopyFileToSharedNetworkDirectory(Session session, string localFilePath, string networkFileDirectory)
+        private (bool isSuccess, string exceptionText) CopyFileToSharedNetworkDirectory(string localFilePath, string networkFileDirectory)
         {
             try
             {
-                NetworkCredential theNetworkCredential = new NetworkCredential(session.User.Login, session.User.Password);
-                CredentialCache theNetCache = new CredentialCache();
-                theNetCache.Add(new Uri(networkFileDirectory), "Basic", theNetworkCredential);
+                SetNetworkCredentials(networkFileDirectory);
                 Directory.CreateDirectory(networkFileDirectory);
                 File.Copy(localFilePath, Path.Combine(networkFileDirectory, Path.GetFileName(localFilePath)));
                 return (true, string.Empty);
@@ -158,6 +160,17 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             _ = botClient.SendTextMessageAsync(update.Chat,
                 string.Format(TextConsts.AddFileHandleAddedMsg, task.Id, filename),
                 parseMode: ParseMode.Html);
+        }
+
+        private void SetNetworkCredentials(string networkFileDirectory)
+        {
+            var networkCred = ConfigRepository.GetNetworkAccessCredentials();
+            var login = networkCred.login;
+            var pswCipher = EncryptionHelper.Decrypt(networkCred.pswCipher, login, login);
+
+            var cred = new NetworkCredential(login, pswCipher);
+            var credCache = new CredentialCache();
+            credCache.Add(new Uri(networkFileDirectory), "Basic", cred);
         }
     }
 }

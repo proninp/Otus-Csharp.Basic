@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using MTLServiceBot.Assistants;
 
 namespace MTLServiceBot.SQL
@@ -69,6 +70,21 @@ namespace MTLServiceBot.SQL
             if (attemptsCount == 0)
                 throw new InvalidOperationException(TextConsts.ConfigRepoAvailAuthCountError);
             return attemptsCount;
+        }
+
+        public static (string login, string pswCipher) GetNetworkAccessCredentials()
+        {
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            var query = $"SELECT [Network Access User], [Network Access Password Cipher] FROM [dbo].[Tg Application Setup] WHERE [Bot Id] = @botId";
+            var credentials = db.QueryFirstOrDefault<(string login, string pswCipher)>(query, new
+            {
+                botId = GetSetupId()
+            });
+            if (string.IsNullOrEmpty(credentials.login))
+                throw new InvalidOperationException(TextConsts.ConfigRepoNetworkLoginError);
+            if (string.IsNullOrEmpty(credentials.pswCipher))
+                throw new InvalidOperationException(TextConsts.ConfigRepoNetworkPswError);
+            return credentials;
         }
 
         private static string GetSetupId()

@@ -15,7 +15,7 @@ namespace MTLServiceBot.API
         private readonly string _serviceTasksApiUrl;
         private readonly string _serviceTaskApiUrl;
         private readonly string _setTaskStatusApiUrl;
-        private readonly string _addЕпFileInfo;
+        private readonly string _addЕпFileInfoApiUrl;
         private readonly string _getTaskFilesListUrl;
         private readonly string _addCommentApiUrl;
 
@@ -27,7 +27,7 @@ namespace MTLServiceBot.API
             _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
             _serviceTaskApiUrl = $"{_mailApiUrl}/ServiceEngineerRequestsAll" + "?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
             _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
-            _addЕпFileInfo = $"{_mailApiUrl}/AddTelegramFile";
+            _addЕпFileInfoApiUrl = $"{_mailApiUrl}/AddTelegramFile";
             _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
             _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
         }
@@ -65,19 +65,22 @@ namespace MTLServiceBot.API
             return authResponse;
         }
 
-        public async Task<ApiResponse> GetServiceTasks(Session session)
-            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);
-
-        public async Task<ApiResponse> GetServiceTask(Session session, string requestNo, string taskNo) =>
-            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get,
-                string.Format(_serviceTaskApiUrl, requestNo, taskNo));
+        public async Task<ApiResponse> GetServiceTasks(Session session, string requestNo = "", string taskNo = "")
+        {
+            if (string.IsNullOrEmpty(requestNo) || string.IsNullOrEmpty(taskNo))
+            {
+                return await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);
+            }
+                
+            return await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, string.Format(_serviceTaskApiUrl, requestNo, taskNo));
+        }
 
         public async Task<ApiResponse> ChangeServiceTaskStatus(Session session, ServiceTask task)
             => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
                 _setTaskStatusApiUrl, task.GetNewStatusContent());
 
         public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string filename, string filePath) =>
-            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addЕпFileInfo,
+            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addЕпFileInfoApiUrl,
                 task.GetNewFileInfoContent(filename, filePath));
 
         private async Task<ApiResponse> SendServiceRequest(

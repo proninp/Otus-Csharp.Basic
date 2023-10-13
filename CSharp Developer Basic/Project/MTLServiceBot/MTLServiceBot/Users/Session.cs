@@ -6,12 +6,14 @@ namespace MTLServiceBot.Users
 {
     public class Session
     {
+        private static int _defaultAuthAttemtsCount = ConfigRepository.GetAvailabelAuthorizationCount();
+        
         public TgUser User { get; set; }
         public long ChatId { get; init; }
         public AuthStep AuthStep { get; set; }
         public bool IsAuthorized { get => CheckAuthorization(); }
         private bool _isAuthorized;
-        public int AvailableAuthorizationAttemts { get; set; }
+        public int AvailableAuthorizationAttemts { get; private set; }
         public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public string WorkFlowTaskId { get; set; }
         public DateTime LoginDatetime { get; set; }
@@ -22,6 +24,7 @@ namespace MTLServiceBot.Users
         {
             User.Name = username ?? "";
             LogoutDatetime = logoutDatetime;
+            UpdateAvailableAuthorizationAttempts();
         }
 
         public Session(long id, long chatId, string login, string password, DateTime loginDatetime)
@@ -82,6 +85,33 @@ namespace MTLServiceBot.Users
             AuthStep = AuthStep.None;
             LogoutDatetime = DateTime.Now;
             this.LogoutSession();
+            SetDefaultAvailableAuthorizationAttempts();
+        }
+
+        private void SetDefaultAvailableAuthorizationAttempts()
+        {
+            AvailableAuthorizationAttemts = _defaultAuthAttemtsCount;
+            this.UpdateDbUserAttemptsCount();
+        }
+
+        private void UpdateAvailableAuthorizationAttempts()
+        {
+            if (!this.CheckAuthAttemptsRecordExists())
+                SetDefaultAvailableAuthorizationAttempts();
+            else
+                AvailableAuthorizationAttemts = this.GetAvailableAuthAttemptsCount();
+        }
+
+        public bool CheckAvailableAuthorizationAttempts()
+        {
+            UpdateAvailableAuthorizationAttempts();
+            return AvailableAuthorizationAttemts > 0;
+        }
+
+        public void DecreaseAvailableSessions()
+        {
+            AvailableAuthorizationAttemts--;
+            this.UpdateDbUserAttemptsCount();
         }
 
         public override string ToString() =>

@@ -58,17 +58,17 @@ namespace MTLServiceBot.SQL
             query.Append(" WHERE [Logout Datetime] = '1753-01-01 00:00:00.000'");
             return db.Query<Session>(query.ToString()).ToList();
         }
-        
+
         public static void Save(this Session session)
         {
             var query = new StringBuilder();
             query.Append("INSERT INTO[dbo].[Tg User Sessions]");
             query.Append(" ([User Id], [Chat Id], [Login], [Password Cipher], [Login Datetime], [Logout Datetime])");
-            query.Append(" VALUES (@id, @chatId, @login, @password, @loginDatetime, @logoutDatetime)");
+            query.Append(" VALUES (@userId, @chatId, @login, @password, @loginDatetime, @logoutDatetime)");
             using var db = new SqlConnection(AppConfig.ConnectionString);
             db.Execute(query.ToString(), new
             {
-                id = session.User.Id,
+                userId = session.User.Id,
                 chatId = session.ChatId,
                 login = session.User.Login,
                 password = EncryptionHelper.Encrypt(session.User.Password, session.User.Id.ToString(), session.ChatId.ToString()),
@@ -84,11 +84,11 @@ namespace MTLServiceBot.SQL
             StringBuilder query = new StringBuilder();
             query.Append("UPDATE [dbo].[Tg User Sessions] SET");
             query.Append($" [Logout Datetime] = @logoutDatetime");
-            query.Append($" WHERE [User Id] = @id AND [Chat Id] = @chatId AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
+            query.Append($" WHERE [User Id] = @userId AND [Chat Id] = @chatId AND [Logout Datetime] = '1753-01-01 00:00:00.000'");
             using var db = new SqlConnection(AppConfig.ConnectionString);
             db.Execute(query.ToString(), new
             {
-                id = session.User.Id,
+                userId = session.User.Id,
                 chatId = session.ChatId,
                 logoutDatetime = session.LogoutDatetime
             });
@@ -96,7 +96,55 @@ namespace MTLServiceBot.SQL
 
         public static bool CheckAuthAttemptsRecordExists(this Session session)
         {
-            return true;
+            var query = "SELECT COUNT(*) FROM [dbo].[Tg Authorization Attempts] WHERE [User Id] = @userId AND [Chat Id] = @chatId";
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            var cnt = db.QueryFirstOrDefault<int>(query, new
+            {
+                userId = session.User.Id,
+                chatId = session.ChatId
+            });
+            return cnt > 0;
+        }
+
+        public static int GetAvailableAuthAttemptsCount(this Session session)
+        {
+            var query = "SELECT [Available Attempts Count] FROM [dbo].[Tg Authorization Attempts] WHERE [User Id] = @userId AND [Chat Id] = @chatId";
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            var availCnt = db.QueryFirstOrDefault<int>(query, new
+            {
+                userId = session.User.Id,
+                chatId = session.ChatId
+            });
+            return availCnt;
+        }
+
+        public static void UpdateDbUserAttemptsCount(this Session session)
+        {
+            var query = new StringBuilder();
+            query.AppendLine("IF (SELECT COUNT(*) FROM[dbo].[Tg Authorization Attempts]");
+            query.AppendLine("    WHERE [User Id] = @userId AND [Chat Id] = @chatId) > 0");
+            query.AppendLine("BEGIN");
+            query.AppendLine("    UPDATE[dbo].[Tg Authorization Attempts]");
+            query.AppendLine("    SET [Available Attempts Count] = @availableAttemptsCnt");
+            query.AppendLine("    WHERE [User Id] = @userId AND [Chat Id] = @chatId");
+            query.AppendLine("END;");
+            query.AppendLine("ELSE");
+            query.AppendLine("BEGIN");
+            query.AppendLine("    INSERT INTO [dbo].[Tg Authorization Attempts] (");
+            query.AppendLine("    [User Id], [Chat Id], [Tg Username], [First Name], [Last Name], [Available Attempts Count])");
+            query.AppendLine("    VALUES(@userId, @chatId, @username, @firstname, @lastname, @availableAttemptsCnt)");
+            query.AppendLine("END;");
+
+            using var db = new SqlConnection(AppConfig.ConnectionString);
+            db.Execute(query.ToString(), new
+            {
+                userId = session.User.Id,
+                chatId = session.ChatId,
+                username = session.User.Name,
+                firstname = session.User.Firstname,
+                lastname = session.User.Lastname,
+                availableAttemptsCnt = session.AvailableAuthorizationAttemts
+            });
         }
     }
 }

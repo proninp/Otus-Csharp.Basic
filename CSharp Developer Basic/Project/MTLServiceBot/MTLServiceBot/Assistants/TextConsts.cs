@@ -23,16 +23,20 @@
         public const string ConfigRepoTgFilesError = "Необходимо указать директорию для скачивания файлов в таблице настроек Telegram бота";
         public const string ConfigRepoSharedNetworkError = "Необходимо указать сетевую директорию для размещения файлов в таблице настроек Telegram бота";
         public const string ConfigRepoAvailAuthCountError = "Необходимо указать допустимое количество попыток авторизации в таблице настроек Telegram бота";
+        public const string ConfigRepoNetworkLoginError = "Необходимо указать логин для авторизации на сетевом ресурсе в таблице настроек Telegram бота";
+        public const string ConfigRepoNetworkPswError = "Необходимо указать пароль для авторизации на сетевом ресурсе в таблице настроек Telegram бота";
         public const string ConfigRepoAppSetupIdError = "Необходимо указать Id настройки бота";
 
         public const string StopCommandMsg = "До свидания, {0}! Позднее, мы очистим историю взаимодействий с ботом.";
 
-        public const string EnterLogin = "Введите имя пользователя";
+        public const string EnterLogin = $"{AvailableAuthAttemptsPhrase}\nВведите ваш логин";
         public const string EnterPassword = "Введите пароль";
         public const string LoginEmptyError = "Имя пользователя не может быть пустым!";
         public const string PasswordEmptyError = "Пароль не может быть пустым!";
         public const string LoginSuccessMsg = "Добро пожаловать, {0}! Вы успешно авторизованы!";
         public const string LoginAlreadyAuthorized = "Вы уже авторизованы, как {0}.";
+        public const string AvailableAuthAttemptsPhrase = "Доступных попыток для авторизации: <b>{0}</b>";
+        public const string LoginNoAuthorizedAttempts = "Вы израсходовали число допустимых попыток авторизации, обратитесь к администратору для сброса сессии";
         
         public const string AuthorizationRequired = "Для выполнения команды {0} требуется авторизация.";
         public const string LogoutUnathorized = "Вы не авторизованы в системе, выполнение команды невозможно";
@@ -44,7 +48,7 @@
         public const string UpdateTypeDataUnknown = "Нераспознан объект данных сообщения {0}";
         public const string UpdateMessageTypeError = $"Данный тип сообщений не поддерживается, для получения информации о работе бота воспользуйтесь командой {HelpCommandName}";
         public const string UpdateMessageFromBotError = "Получено сообщение в чате [{0}] от аккаунта [{1}], являющегося ботом с именем [{2}]:\n[{3}].\nСообщение от было проигнорировано.";
-        public const string UpdateNewReceivingLog = "Получена команда c типом [{0}] в чате [{1}] от: [{2}] - [{3}].\nТекст команды:\n[{4}]";
+        public const string UpdateNewReceivingLog = "Получена команда c типом [{0}] в чате [{1}] от: [{2}] - [{3}].\nТекст команды:\n'{4}'";
         public const string UpdateCommandExceptionTemplate = "Команда {0}, исключение: {1}";
 
         public const string UnknownCommand = $"Команда не распознана.\nДля получения списка команд введите {HelpCommandName}";

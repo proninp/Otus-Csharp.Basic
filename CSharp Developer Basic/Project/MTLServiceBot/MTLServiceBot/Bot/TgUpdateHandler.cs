@@ -130,7 +130,7 @@ namespace MTLServiceBot.Bot
             TgUser? user = session.User;
             if (user is null)
             {
-                user = new TgUser(userId, update.From.Username);
+                user = new TgUser(userId, update.From.Username, update.From.FirstName, update.From.LastName);
                 session.User = user;
             }
             return session;
