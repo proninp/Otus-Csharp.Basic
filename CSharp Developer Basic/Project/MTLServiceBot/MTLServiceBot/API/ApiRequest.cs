@@ -1,26 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MTLServiceBot.API
+﻿namespace MTLServiceBot.API
 {
     public class ApiRequest
     {
-        public string AuthHeader { get; set; }
-        HttpMethod Method { get; set; }
-        string Url { get; set; }
-        HttpContent? Content { get; set; } = null;
-        Stream? DataStream { get; set; } = null;
+        private readonly HttpContent? _httpContent;
+        private readonly Stream? _contentStream;
 
-        public ApiRequest(string authHeader, HttpMethod method, string url, HttpContent? content = null, Stream? dataStream = null)
+        public string Url { get; set; }
+        public HttpMethod Method { get; set; }
+        public string AuthHeader { get; set; }
+        public HttpContent? HttpContent { get => _httpContent; }
+        public Stream? ContentStream { get => _contentStream; }
+
+        public ApiRequest(string url, HttpMethod method, string authHeader, Stream? contentStream) : this(url, method, authHeader)
         {
-            AuthHeader = authHeader;
-            Method = method;
+            _contentStream = contentStream;
+        }
+
+        public ApiRequest(string url, HttpMethod method, string authHeader, HttpContent? httpContent): this(url, method, authHeader)
+        {
+            _httpContent = httpContent;
+        }
+
+        public ApiRequest(string url, HttpMethod method, string authHeader)
+        {
             Url = url;
-            Content = content;
-            DataStream = dataStream;
+            Method = method;
+            AuthHeader = authHeader;
         }
     }
 }

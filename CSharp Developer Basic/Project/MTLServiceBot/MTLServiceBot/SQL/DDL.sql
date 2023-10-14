@@ -1,11 +1,12 @@
-﻿CREATE TABLE [dbo].[Tg Application Setup](
+﻿CREATE TABLE [dbo].[Tg Bot Application Setup](
 	[timestamp] [timestamp] NOT NULL,
 	[Bot Id] [nvarchar](20) NOT NULL,
 	[Bot Token] [nvarchar](50) NOT NULL,
 	[API Url] [nvarchar](100) NOT NULL,
-	[Tg Files Download Path] [nvarchar](250) NOT NULL,
+	[Telegram Files Download Path] [nvarchar](250) NOT NULL,
 	[Service Files Network Path] [nvarchar](250) NULL,
 	[User Authorization Attempts] [int] NOT NULL,
+	[Send Files as Base64 API] [tinyint] NOT NULL,
  CONSTRAINT [Tg Application Setup$0] PRIMARY KEY CLUSTERED ([Bot Id] ASC) WITH (
 	PAD_INDEX = OFF,
 	STATISTICS_NORECOMPUTE = OFF,

@@ -13,50 +13,53 @@ namespace MTLServiceBot.API
         {
         }
 
-        /// <summary>
-        /// Отправка API запроса в MS Dynamics Nav
-        /// </summary>
-        /// <param name="authHeader">Заголовок авторизации</param>
-        /// <param name="method">http метод</param>
-        /// <param name="apiUrl">Адрес URL</param>
-        /// <param name="content">Содержимое сообщения</param>
-        /// <returns>Ответ от сервера MS Dynamics Nav</returns>
-        public async Task<(ApiResponseStatus status, string responseText)> SendServiceApiRequest(string authHeader, HttpMethod method,
-            string apiUrl, HttpContent? content = null)
+        public async Task<ApiResponse> SendApiRequset(ApiRequest apiRequest)
         {
+            var apiResponseStatus = ApiResponseStatus.Error; 
             var responseText = string.Empty;
-            var responseStatus = ApiResponseStatus.Error;
-
             try
             {
-                (responseStatus, responseText) = await SendApiRequset(authHeader, method, apiUrl, content);
+                using (var request = new HttpRequestMessage(apiRequest.Method, apiRequest.Url))
+                {
+                    AddRequestHeaders(request, apiRequest.AuthHeader);
+                    GetContent(request, apiRequest);
+
+                    AssistLog.ColoredPrint(request.ToString(), LogStatus.Attention); // TODO Logging
+
+                    using (var response = await _httpClient.SendAsync(request))
+                    {
+                        responseText = await GetHttpApiResponse(response);
+                        apiResponseStatus = GetApiResponseStatus(response);
+                    }
+                }
             }
             catch (Exception ex)
             {
                 AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
             }
-            return (responseStatus, responseText);
+            var apiResponse = new ApiResponse(apiResponseStatus, responseText);
+            return (apiResponse);
         }
 
-        private async Task<(ApiResponseStatus, string)> SendApiRequset(string authHeader, HttpMethod method, string? apiUrl, HttpContent? content)
+        private void GetContent(HttpRequestMessage request, ApiRequest apiRequest)
         {
-            using var request = new HttpRequestMessage(method, apiUrl);
-            AddRequestHeaders(request, authHeader);
+            if (apiRequest.Method.Equals(HttpMethod.Get))
+                return;
 
-            if (!method.Equals(HttpMethod.Get) && content is not null)
-                request.Content = content;
-            AssistLog.ColoredPrint(request.ToString(), LogStatus.Attention); // TODO Logging
-            var responseText = string.Empty;
-            var apiResponseStatus = ApiResponseStatus.Error;
-            using (var response = await _httpClient.SendAsync(request))
+            if (apiRequest.HttpContent is not null)
             {
-                responseText = await GetApiResponse(response);
-                apiResponseStatus = GetApiResponseStatus(response);
+                request.Content = apiRequest.HttpContent;
+                return;
             }
-            return (apiResponseStatus, responseText);
+            if (apiRequest.ContentStream is null)
+                return;
+            
+            var content = new StreamContent(apiRequest.ContentStream);
+            content.Headers.Add("Content-Type", "application/json; charset=utf-8");
+            request.Content = content;
         }
 
-        private async Task<string> GetApiResponse(HttpResponseMessage? httpResponse)
+        private async Task<string> GetHttpApiResponse(HttpResponseMessage? httpResponse)
         {
             if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
             {
@@ -87,7 +90,6 @@ namespace MTLServiceBot.API
 
         private void LogHttpResponseError(HttpResponseMessage? httpResponse)
         {
-            // TODO Logging
             var sb = new StringBuilder();
             sb.AppendLine($"{nameof(httpResponse)} ошибка в {DateTime.Now}");
             if (httpResponse is not null)

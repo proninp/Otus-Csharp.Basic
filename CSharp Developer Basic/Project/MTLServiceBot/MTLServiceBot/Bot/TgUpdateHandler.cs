@@ -56,7 +56,6 @@ namespace MTLServiceBot.Bot
 
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, TgUpdate update, CancellationToken cancellationToken)
         {
-
             var commandText = update.Message!.Text ?? "";
             var logText = string.Format(TextConsts.UpdateNewReceivingLog, update.UpdateType.ToString(),
                 update.Chat!.Id, update.From!.Id, update.From.Username, commandText);

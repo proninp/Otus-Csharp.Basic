@@ -34,9 +34,9 @@ namespace MTLServiceBot.Users
             Lastname = "";
         }
 
-        public string GetAuthUserPasswordValue() => GetAuthValue($"{Login}:{Password}");
+        public string GetUserPassAuthHeader() => GetAuthValue($"{Login}:{Password}");
 
-        public string GetAuthByTokenValue() => GetAuthValue($"{Login}:{AuthToken}");
+        public string GetTokenAuthHeader() => GetAuthValue($"{Login}:{AuthToken}");
 
         private string GetAuthValue(string credentials)
         {

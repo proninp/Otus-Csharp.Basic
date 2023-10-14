@@ -14,27 +14,26 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
 {
     public partial class ServiceRequest : Command
     {
-        private readonly ServiceAPI _api;
         private readonly string _tgFilesDirectory;
         private readonly string _sharedNetworkDirectory;
 
         public ServiceRequest(string name, string description, bool isRequireAuthentication) : base(name, description, isRequireAuthentication)
         {
-            _api = ServiceAPI.GetInstance();
             _tgFilesDirectory = ConfigRepository.GetDownloadedFilesDirectory();
             _sharedNetworkDirectory = ConfigRepository.GetSharedNetworkDirectory();
         }
 
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
-            var response = await _api.GetServiceTasks(session);
-            if (!response.IsSuccess)
+            var api = new ServiceAPI(session);
+            var apiResponse = await api.GetServiceTasks();
+            if (!apiResponse.IsSuccess)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), response.Message, LogStatus.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), apiResponse.Message, LogStatus.Warning);
                 return;
             }
 
-            if (!GetServiceTasksList(out List<ServiceTask>? serviceTasksList, botClient, update, response.ResponseText))
+            if (!GetServiceTasksList(out List<ServiceTask>? serviceTasksList, botClient, update, apiResponse.ResponseText))
                 return;
 
             var replyButtons = GetServiceTasksReplyButtons(serviceTasksList!);

@@ -90,7 +90,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
         private async Task<bool> ChangeTaskStatusApiRequestAsync(ITelegramBotClient botClient, TgUpdate update,
             Session session, ServiceTask serviceTask)
         {
-            var response = await _api.ChangeServiceTaskStatus(session, serviceTask);
+            var api = new ServiceAPI(session);
+            var response = await api.ChangeServiceTaskStatus(serviceTask);
             if (!response.IsSuccess)
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
@@ -127,7 +128,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var taskIdParts = taskId.Split(TextConsts.SingleTaskNumberFormatSeparator);
             if (taskIdParts.Length != 2)
                 return serviceTask;
-            var response = await _api.GetServiceTask(session, taskIdParts[0], taskIdParts[1]);
+            var api = new ServiceAPI(session);
+            var response = await api.GetServiceTasks(taskIdParts[0], taskIdParts[1]);
             if (!response.IsSuccess)
                 return serviceTask;
 

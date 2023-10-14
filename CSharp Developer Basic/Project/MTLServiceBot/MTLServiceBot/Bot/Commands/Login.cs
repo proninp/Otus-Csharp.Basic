@@ -83,12 +83,14 @@ namespace MTLServiceBot.Bot.Commands
                 _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.PasswordEmptyError);
                 return;
             }
+            
             session.User.Password = password;
+            var api = new ServiceAPI(session);
+            var response = await api.Authorize();
+            
             var authMessage = new StringBuilder();
-
-            var api = ServiceAPI.GetInstance();
-            var response = await api.Authorize(session);
             authMessage.AppendLine(response.Message);
+
             if (response.IsSuccess)
                 await botClient.DeleteMessageAsync(message.Chat, message.MessageId, default); // Убираем из истории чата введенный пароль
             else

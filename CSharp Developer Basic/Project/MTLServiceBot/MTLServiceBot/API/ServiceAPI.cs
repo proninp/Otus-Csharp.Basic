@@ -7,107 +7,102 @@ namespace MTLServiceBot.API
 {
     sealed class ServiceAPI
     {
-        private static ServiceAPI? _instance;
-        private static readonly object _instanceLock = new object();
+        private static string _mailApiUrl = ConfigRepository.GetApiUrl();
+        private static string _authApiUrl = $"{_mailApiUrl}/GetST";
+        private static string _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
+        private static string _serviceTaskApiUrl = _mailApiUrl + "/ServiceEngineerRequestsAll?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
+        private static string _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
+        private static string _addFileApiUrl = $"{_mailApiUrl}/AddServiceFile";
+        private static string _addNetworkFileApiUrl = $"{_mailApiUrl}/AddTelegramFile";
+        private static string _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
+        private static string _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
+        
         private readonly NavAPI _api;
-        private readonly string _mailApiUrl;
-        private readonly string _authApiUrl;
-        private readonly string _serviceTasksApiUrl;
-        private readonly string _serviceTaskApiUrl;
-        private readonly string _setTaskStatusApiUrl;
-        private readonly string _addЕпFileInfoApiUrl;
-        private readonly string _getTaskFilesListUrl;
-        private readonly string _addCommentApiUrl;
+        private readonly Session _session;
 
-        private ServiceAPI()
+        public ServiceAPI(Session session)
         {
             _api = new();
-            _mailApiUrl = ConfigRepository.GetApiUrl();
-            _authApiUrl = $"{_mailApiUrl}/GetST";
-            _serviceTasksApiUrl = $"{_mailApiUrl}/ServiceEngineerRequests";
-            _serviceTaskApiUrl = $"{_mailApiUrl}/ServiceEngineerRequestsAll" + "?$filter=Request_No eq '{0}' and Task_No eq '{1}'";
-            _setTaskStatusApiUrl = $"{_mailApiUrl}/SetStatus";
-            _addЕпFileInfoApiUrl = $"{_mailApiUrl}/AddTelegramFile";
-            _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
-            _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
+            _session = session;
         }
 
-        public static ServiceAPI GetInstance()
+        public async Task<ApiResponse> Authorize()
         {
-            if (_instance is null)
+            var authApiRequest = new ApiRequest(_authApiUrl, HttpMethod.Post, _session.User.GetUserPassAuthHeader());
+            var authApiResponse = await _api.SendApiRequset(authApiRequest);
+
+            if (authApiResponse.IsSuccess && !string.IsNullOrEmpty(authApiResponse.ResponseText))
             {
-                lock (_instanceLock)
-                {
-                    if (_instance is null)
-                        _instance = new ServiceAPI();
-                }
+                _session.SetSessionAuthorization(authApiResponse.ResponseText);
+                authApiResponse.Message = string.Format(TextConsts.LoginSuccessMsg, _session.User.Name);
             }
-            return _instance;
+            return authApiResponse;
         }
 
-        public async Task<ApiResponse> Authorize(Session session)
+        public async Task<ApiResponse> GetServiceTasks(string? requestNo = null, string? taskNo = null)
         {
-            ApiResponse authResponse;
-            var apiResponse = await _api.SendServiceApiRequest(
-                session.User.GetAuthUserPasswordValue(),
-                HttpMethod.Post,
-                _authApiUrl);
-
-            if (apiResponse.status == ApiResponseStatus.Success && !string.IsNullOrEmpty(apiResponse.responseText))
-            {
-                session.SetSessionAuthorization(apiResponse.responseText);
-                authResponse = new ApiResponse(apiResponse.status,
-                    apiResponse.responseText,
-                    string.Format(TextConsts.LoginSuccessMsg, session.User.Name));
-            }
-            else
-                authResponse = new ApiResponse(apiResponse.status, apiResponse.responseText);
-            return authResponse;
-        }
-
-        public async Task<ApiResponse> GetServiceTasks(Session session, string requestNo = "", string taskNo = "")
-        {
+            ApiRequest apiRequest;
             if (string.IsNullOrEmpty(requestNo) || string.IsNullOrEmpty(taskNo))
             {
-                return await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, _serviceTasksApiUrl);
+                apiRequest = new ApiRequest(_serviceTasksApiUrl, HttpMethod.Get, _session.User.GetTokenAuthHeader());
+                return await SendServiceRequest(apiRequest);
             }
-                
-            return await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Get, string.Format(_serviceTaskApiUrl, requestNo, taskNo));
+
+            apiRequest = new ApiRequest(string.Format(_serviceTaskApiUrl, requestNo, taskNo),
+                HttpMethod.Get, _session.User.GetTokenAuthHeader());
+
+            return await SendServiceRequest(apiRequest);
         }
 
-        public async Task<ApiResponse> ChangeServiceTaskStatus(Session session, ServiceTask task)
-            => await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post,
-                _setTaskStatusApiUrl, task.GetNewStatusContent());
+        public async Task<ApiResponse> ChangeServiceTaskStatus(ServiceTask task)
+        {
+            var apiRequest = new ApiRequest(_setTaskStatusApiUrl, HttpMethod.Post,
+                _session.User.GetTokenAuthHeader(), task.GetNewStatusContent());
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(Session session, ServiceTask task, string filename, string filePath) =>
-            await SendServiceRequest(_api.SendServiceApiRequest, session, HttpMethod.Post, _addЕпFileInfoApiUrl,
-                task.GetNewFileInfoContent(filename, filePath));
+            return await SendServiceRequest(apiRequest);
+        }
 
-        private async Task<ApiResponse> SendServiceRequest(
-            Func<string, HttpMethod, string, HttpContent?, Task<(ApiResponseStatus status, string responseText)>> request,
-            Session session,
-            HttpMethod httpMethod,
-            string apiUrl,
-            HttpContent? content = null)
+        public async Task<ApiResponse> AddNewFileToServiceTask(ServiceTask task, string filePath, string filename, string fileDescription = "")
+        {
+            var apiRequest = new ApiRequest(_addNetworkFileApiUrl, HttpMethod.Post,
+                _session.User.GetTokenAuthHeader(), task.GetNewNetworkFileContent(filename, filePath, fileDescription));
+
+            return await SendServiceRequest(apiRequest);
+        }
+
+        public async Task<ApiResponse> AddNewFileToServiceTask(ServiceTask task, Stream fileStream, string filename, string fileDescription = "")
+        {
+            using var fileContentStream = task.GetNewFileStreamContent(fileStream, filename, fileDescription);
+            var apiRequest = new ApiRequest(_addFileApiUrl, HttpMethod.Post,
+                _session.User.GetTokenAuthHeader(), fileContentStream);
+
+            return await SendServiceRequest(apiRequest);
+        }
+
+        private async Task<ApiResponse> SendServiceRequest(ApiRequest apiRequest)
         {
             ApiResponse authResponse;
             // Если после перезапуска приложения для сохраненной сессии еще не был получен новый токен
-            if (string.IsNullOrEmpty(session.User.AuthToken))
+            if (string.IsNullOrEmpty(_session.User.AuthToken))
             {
-                authResponse = await Authorize(session);
+                authResponse = await Authorize();
                 if (!authResponse.IsSuccess)
                     return authResponse;
+                apiRequest.AuthHeader = _session.User.GetTokenAuthHeader();
             }
-            var apiResponse = await request(session.User.GetAuthByTokenValue(), httpMethod, apiUrl, content);
-            if (apiResponse.status == ApiResponseStatus.Unauthorized) // Обновляем токен, если истек срок действия
+
+            var apiResponse = await _api.SendApiRequset(apiRequest);
+            if (apiResponse.Status == ApiResponseStatus.Unauthorized) // Обновляем токен, если истек срок действия
             {
-                authResponse = await Authorize(session);
+                authResponse = await Authorize();
                 if (!authResponse.IsSuccess)
                     return authResponse;
+                apiRequest.AuthHeader = _session.User.GetTokenAuthHeader();
+
                 // Если повторная авторизация прошла успешно, то заново выполняем запрос списка сервисных обращений
-                apiResponse = await request(session.User.GetAuthByTokenValue(), httpMethod, apiUrl, content);
+                apiResponse = await _api.SendApiRequset(apiRequest);
             }
-            return new ApiResponse(apiResponse.status, apiResponse.responseText);
+            return apiResponse;
         }
     }
 }

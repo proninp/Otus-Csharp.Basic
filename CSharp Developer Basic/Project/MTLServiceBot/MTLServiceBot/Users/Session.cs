@@ -7,12 +7,12 @@ namespace MTLServiceBot.Users
     public class Session
     {
         private static int _defaultAuthAttemtsCount = ConfigRepository.GetAvailabelAuthorizationCount();
-        
+        private bool _isAuthorized;
+
         public TgUser User { get; set; }
         public long ChatId { get; init; }
         public AuthStep AuthStep { get; set; }
         public bool IsAuthorized { get => CheckAuthorization(); }
-        private bool _isAuthorized;
         public int AvailableAuthorizationAttemts { get; private set; }
         public WorkFlow WorkFlowState { get; set; } // режим работы с одной командой, переключается только в случае, если пришла другая команда
         public string WorkFlowTaskId { get; set; }

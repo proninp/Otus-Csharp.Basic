@@ -1,9 +1,12 @@
-﻿using MTLServiceBot.API.Entities;
+﻿using MTLServiceBot.API;
+using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Net;
+using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -58,20 +61,37 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
 
             var tgFilePath = fileInfo.FilePath;
             var destinationFilename = $"{serviceTask.RequestNo}-{serviceTask.TaskNo} {Path.GetFileName(tgFilePath)}";
-            var localFilePath = Path.Combine(_tgFilesDirectory, update.From.Id.ToString(), destinationFilename);
-            if (!await DownloadTgFileAsync(botClient, update, replyButtons, taskId, tgFilePath, localFilePath))
-                return;
 
-            var networkFileDirectory = Path.Combine(_sharedNetworkDirectory, update.From.Id.ToString());
-            var copyResult = CopyFileToSharedNetworkDirectory(localFilePath, networkFileDirectory);
-            if (!copyResult.isSuccess)
+            ApiResponse apiResponse;
+            var api = new ServiceAPI(session);
+
+            if (ConfigRepository.GetSendAsFileSetup())
             {
-                SendNotification(botClient, update.Chat, replyButtons,
-                    string.Format(TextConsts.AddFileHandleCopyError, taskId),
-                    LogStatus.Error, copyResult.exceptionText);
-                return;
+                using (var fileStream = await DownloadFileAsync(botClient, tgFilePath))
+                {
+                    apiResponse = await api.AddNewFileToServiceTask(serviceTask, fileStream, destinationFilename);
+                }
             }
-            await AddNewTaskFileApiRequestAsync(botClient, update, session, serviceTask, destinationFilename, networkFileDirectory);
+            else
+            {
+                var networkFileDirectory = await UploadFileToNetworkPath(botClient, update, replyButtons, taskId, tgFilePath, destinationFilename);
+                if (string.IsNullOrEmpty(networkFileDirectory))
+                    return;
+                apiResponse = await api.AddNewFileToServiceTask(serviceTask, Path.Combine(networkFileDirectory, destinationFilename), 
+                    destinationFilename);
+            }
+            
+            if (apiResponse.IsSuccess)
+            {
+                _ = botClient.SendTextMessageAsync(update.Chat,
+                    string.Format(TextConsts.AddFileHandleAddedMsg, serviceTask.Id, destinationFilename),
+                    parseMode: ParseMode.Html);
+            }
+            else
+            {
+                SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError,
+                    serviceTask.Id), LogStatus.Error, apiResponse.Message);
+            }
         }
 
         private bool CheckAddNewFileCallParams(ITelegramBotClient botClient, TgUpdate update, Session session,
@@ -115,17 +135,40 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             return fileId;
         }
 
-        private async Task<bool> DownloadTgFileAsync(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons,
+        private async Task<Stream> DownloadFileAsync(ITelegramBotClient botClient, string filePath)
+        {
+            var fileStream = new MemoryStream();
+            await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
+            fileStream.Seek(0, SeekOrigin.Begin);
+            return fileStream;
+        }
+
+        private async Task<string> UploadFileToNetworkPath(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons, string taskId,
+            string tgFilePath, string destinationFilename)
+        {
+            var localFilePath = Path.Combine(_tgFilesDirectory, update.From.Id.ToString(), destinationFilename);
+
+            if (!await DownloadFileAsync(botClient, update, replyButtons, taskId, tgFilePath, localFilePath))
+                return "";
+
+            var networkFileDirectory = Path.Combine(_sharedNetworkDirectory, update.From.Id.ToString());
+            if (!CopyFileToSharedNetworkDirectory(botClient, update, replyButtons, taskId, localFilePath, networkFileDirectory))
+                return "";
+
+            return networkFileDirectory;
+        }
+
+        private async Task<bool> DownloadFileAsync(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons,
             string taskId, string filePath, string destinationFilePath)
         {
             var dir = Path.GetDirectoryName(destinationFilePath);
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            using (Stream fileStream = File.Create(destinationFilePath))
+            using (Stream fileStream = System.IO.File.Create(destinationFilePath))
             {
                 await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
             }
-            if (!File.Exists(destinationFilePath))
+            if (!System.IO.File.Exists(destinationFilePath))
             {
                 SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.AddFileHandleReceiveError, taskId));
                 return false;
@@ -133,44 +176,46 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             return true;
         }
 
-        private (bool isSuccess, string exceptionText) CopyFileToSharedNetworkDirectory(string localFilePath, string networkFileDirectory)
+        private bool CopyFileToSharedNetworkDirectory(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons, 
+            string taskId, string localFilePath, string networkFileDirectory)
         {
             try
             {
                 SetNetworkCredentials(networkFileDirectory);
                 Directory.CreateDirectory(networkFileDirectory);
-                File.Copy(localFilePath, Path.Combine(networkFileDirectory, Path.GetFileName(localFilePath)));
-                return (true, string.Empty);
+                System.IO.File.Copy(localFilePath, Path.Combine(networkFileDirectory, Path.GetFileName(localFilePath)));
+                return true;
             }
             catch (Exception ex)
             {
-                return (false, ex.Message);
+                SendNotification(botClient, update.Chat, replyButtons,
+                    string.Format(TextConsts.AddFileHandleCopyError, taskId),
+                    LogStatus.Error, ex.Message);
+                return false;
             }
         }
 
-        private async Task AddNewTaskFileApiRequestAsync(ITelegramBotClient botClient, TgUpdate update, Session session,
-            ServiceTask task, string filename, string networkFileDirectory)
+        private void SetNetworkCredentials(string networkFileDirectory)
         {
-            var response = await _api.AddNewFileToServiceTask(session, task, filename, Path.Combine(networkFileDirectory, filename));
-            if (!response.IsSuccess)
+            var access = ConfigRepository.GetNetworkAccessCredentials();
+            var login = access.login;
+            var pswCipher = EncryptionHelper.Decrypt(access.pswCipher, login, login);
+
+            var cred = new NetworkCredential(login, pswCipher);
+            var credCache = new CredentialCache();
+            credCache.Add(new Uri(networkFileDirectory), "Basic", cred);
+        }
+
+        private void HandleNewTaskFileResponse(ITelegramBotClient botClient, TgUpdate update, ApiResponse apiResponse, ServiceTask task, string filename)
+        {
+            if (!apiResponse.IsSuccess)
             {
-                SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError, task.Id), LogStatus.Error, response.Message);
+                SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError, task.Id), LogStatus.Error, apiResponse.Message);
                 return;
             }
             _ = botClient.SendTextMessageAsync(update.Chat,
                 string.Format(TextConsts.AddFileHandleAddedMsg, task.Id, filename),
                 parseMode: ParseMode.Html);
-        }
-
-        private void SetNetworkCredentials(string networkFileDirectory)
-        {
-            var networkCred = ConfigRepository.GetNetworkAccessCredentials();
-            var login = networkCred.login;
-            var pswCipher = EncryptionHelper.Decrypt(networkCred.pswCipher, login, login);
-
-            var cred = new NetworkCredential(login, pswCipher);
-            var credCache = new CredentialCache();
-            credCache.Add(new Uri(networkFileDirectory), "Basic", cred);
         }
     }
 }

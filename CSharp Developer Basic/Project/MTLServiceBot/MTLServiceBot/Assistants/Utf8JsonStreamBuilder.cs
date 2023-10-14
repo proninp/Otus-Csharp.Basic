@@ -33,7 +33,7 @@ namespace MTLServiceBot.Assistants
 
             _currentStreamWriter.Write(@$"""{propertyName}"":""");
             AddStream();
-            _currentStreamWriter.Write(@""",");
+            _currentStreamWriter.Write(@"""");
         }
 
         public Stream GetStream()

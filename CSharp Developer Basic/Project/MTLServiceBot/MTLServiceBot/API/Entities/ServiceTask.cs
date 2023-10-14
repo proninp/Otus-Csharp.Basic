@@ -1,8 +1,11 @@
 ﻿using MTLServiceBot.Assistants;
+using MTLServiceBot.Bot.Commands.ServiceRequest;
 using Newtonsoft.Json;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using Telegram.Bot.Types;
 
 namespace MTLServiceBot.API.Entities
 {
@@ -96,18 +99,23 @@ namespace MTLServiceBot.API.Entities
             });
         }
 
-        public JsonContent GetNewFileContent(string fileName, string fileContent, string fileDescription = "")
+        public Stream? GetNewFileStreamContent(Stream fileStream, string fileName, string fileDescription)
         {
-            return JsonContent.Create(new
-            {
-                serviceRequestNo = RequestNo,
-                fileName,
-                fileDescription,
-                fileContent
-            });
+            var cryptoStream = new CryptoStream(fileStream, new ToBase64Transform(), CryptoStreamMode.Read);
+            var jsonBuilder = new Utf8JsonStreamBuilder();
+
+            jsonBuilder.AddStartObject();
+            jsonBuilder.AddString("serviceRequestNo", RequestNo);
+            jsonBuilder.AddString("fileName", fileName);
+            jsonBuilder.AddString("fileDescription", fileDescription);
+            jsonBuilder.AddStream("fileContent", cryptoStream);
+            jsonBuilder.AddEndObject();
+
+            var requestStream = jsonBuilder.GetStream();
+            return requestStream;
         }
 
-        public JsonContent GetNewFileInfoContent(string fileName, string filePath, string fileDescription = "")
+        public JsonContent GetNewNetworkFileContent(string fileName, string filePath, string fileDescription)
         {
             return JsonContent.Create(new
             {
