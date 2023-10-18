@@ -86,7 +86,7 @@ namespace MTLServiceBot.Bot.Commands
             
             session.User.Password = password;
             var api = new ServiceAPI(session);
-            var response = await api.Authorize();
+            var response = await api.AuthorizeAsync();
             
             var authMessage = new StringBuilder();
             authMessage.AppendLine(response.Message);

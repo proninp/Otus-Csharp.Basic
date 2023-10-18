@@ -26,10 +26,10 @@ namespace MTLServiceBot.API
             _session = session;
         }
 
-        public async Task<ApiResponse> Authorize()
+        public async Task<ApiResponse> AuthorizeAsync()
         {
             var authApiRequest = new ApiRequest(_authApiUrl, HttpMethod.Post, _session.User.GetUserPassAuthHeader());
-            var authApiResponse = await _api.SendApiRequset(authApiRequest);
+            var authApiResponse = await _api.SendApiRequsetAsync(authApiRequest);
 
             if (authApiResponse.IsSuccess && !string.IsNullOrEmpty(authApiResponse.ResponseText))
             {
@@ -39,68 +39,68 @@ namespace MTLServiceBot.API
             return authApiResponse;
         }
 
-        public async Task<ApiResponse> GetServiceTasks(string? requestNo = null, string? taskNo = null)
+        public async Task<ApiResponse> GetServiceTasksAsync(string? requestNo = null, string? taskNo = null)
         {
             ApiRequest apiRequest;
             if (string.IsNullOrEmpty(requestNo) || string.IsNullOrEmpty(taskNo))
             {
                 apiRequest = new ApiRequest(_serviceTasksApiUrl, HttpMethod.Get, _session.User.GetTokenAuthHeader());
-                return await SendServiceRequest(apiRequest);
+                return await SendServiceRequestAsync(apiRequest);
             }
 
             apiRequest = new ApiRequest(string.Format(_serviceTaskApiUrl, requestNo, taskNo),
                 HttpMethod.Get, _session.User.GetTokenAuthHeader());
 
-            return await SendServiceRequest(apiRequest);
+            return await SendServiceRequestAsync(apiRequest);
         }
 
-        public async Task<ApiResponse> ChangeServiceTaskStatus(ServiceTask task)
+        public async Task<ApiResponse> ChangeServiceTaskStatusAsync(ServiceTask task)
         {
             var apiRequest = new ApiRequest(_setTaskStatusApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewStatusContent());
 
-            return await SendServiceRequest(apiRequest);
+            return await SendServiceRequestAsync(apiRequest);
         }
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(ServiceTask task, string filePath, string filename, string fileDescription = "")
+        public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, string filePath, string filename, string fileDescription = "")
         {
             var apiRequest = new ApiRequest(_addNetworkFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewNetworkFileContent(filename, filePath, fileDescription));
 
-            return await SendServiceRequest(apiRequest);
+            return await SendServiceRequestAsync(apiRequest);
         }
 
-        public async Task<ApiResponse> AddNewFileToServiceTask(ServiceTask task, Stream fileStream, string filename, string fileDescription = "")
+        public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, Stream fileStream, string filename, string fileDescription = "")
         {
             using var fileContentStream = task.GetNewFileStreamContent(fileStream, filename, fileDescription);
             var apiRequest = new ApiRequest(_addFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), fileContentStream);
 
-            return await SendServiceRequest(apiRequest);
+            return await SendServiceRequestAsync(apiRequest);
         }
 
-        private async Task<ApiResponse> SendServiceRequest(ApiRequest apiRequest)
+        private async Task<ApiResponse> SendServiceRequestAsync(ApiRequest apiRequest)
         {
             ApiResponse authResponse;
             // Если после перезапуска приложения для сохраненной сессии еще не был получен новый токен
             if (string.IsNullOrEmpty(_session.User.AuthToken))
             {
-                authResponse = await Authorize();
+                authResponse = await AuthorizeAsync();
                 if (!authResponse.IsSuccess)
                     return authResponse;
                 apiRequest.AuthHeader = _session.User.GetTokenAuthHeader();
             }
 
-            var apiResponse = await _api.SendApiRequset(apiRequest);
+            var apiResponse = await _api.SendApiRequsetAsync(apiRequest);
             if (apiResponse.Status == ApiResponseStatus.Unauthorized) // Обновляем токен, если истек срок действия
             {
-                authResponse = await Authorize();
+                authResponse = await AuthorizeAsync();
                 if (!authResponse.IsSuccess)
                     return authResponse;
                 apiRequest.AuthHeader = _session.User.GetTokenAuthHeader();
 
                 // Если повторная авторизация прошла успешно, то заново выполняем запрос списка сервисных обращений
-                apiResponse = await _api.SendApiRequset(apiRequest);
+                apiResponse = await _api.SendApiRequsetAsync(apiRequest);
             }
             return apiResponse;
         }

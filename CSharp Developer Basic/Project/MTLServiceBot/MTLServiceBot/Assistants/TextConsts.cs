@@ -92,5 +92,9 @@
 
         public const string LogNotificationDescription = "Уведомление при выполнении команды {0}:";
         public const string LogDescription = "Сообщение лога:\n{0}";
+
+        public const string EncryptionKeyRequiredError = "Необходимо указать параметр ключа шифрования!";
+        public const string EncryptionSaltRequiredError = "Необходимо указать параметр модификатора входа хэш-функции шифрования!";
+
     }
 }

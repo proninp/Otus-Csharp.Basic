@@ -33,12 +33,14 @@ namespace MTLServiceBot.Bot
             };
             _bot.Client.StartReceiving(_updateHandler.HandleUpdateAsync, _errorHandling.HandlePollingErrorAsync, receiverOptions, cts.Token);
         }
+
         private void RegisterCommands()
         {
             var commands = _updateHandler.Commands.Select(cmd => new BotCommand { Command = GetCommandName(cmd.Name), Description = cmd.Description }).ToArray();
             var task = _bot.Client.SetMyCommandsAsync(commands);
             task.Wait();
         }
+
         private string GetCommandName(string name) => (name.Length > 0 && name.StartsWith("/") ? name.Substring(1) : name);
 
         public static Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -54,6 +56,5 @@ namespace MTLServiceBot.Bot
             Console.WriteLine(ErrorMessage);
             return Task.CompletedTask;
         }
-
     }
 }

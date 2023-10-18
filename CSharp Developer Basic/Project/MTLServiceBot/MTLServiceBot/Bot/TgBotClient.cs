@@ -8,6 +8,7 @@ namespace MTLServiceBot.Bot
         private readonly Telegram.Bot.Types.User _tgUser;
         public Telegram.Bot.Types.User TgUser { get => _tgUser; }
         public readonly ITelegramBotClient Client;
+        
         public TgBotClient()
         {
             Client = new TelegramBotClient(ConfigRepository.GetBotToken());

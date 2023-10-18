@@ -4,7 +4,6 @@ using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -26,7 +25,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
         public override async Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
             var api = new ServiceAPI(session);
-            var apiResponse = await api.GetServiceTasks();
+            var apiResponse = await api.GetServiceTasksAsync();
             if (!apiResponse.IsSuccess)
             {
                 SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), apiResponse.Message, LogStatus.Warning);
@@ -158,6 +157,5 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
                 }
             }
         }
-        
     }
 }

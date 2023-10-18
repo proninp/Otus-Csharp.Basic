@@ -10,7 +10,7 @@ namespace MTLServiceBot.Assistants
         public static string Encrypt(string? message, string encryptionKey, string encryptionSalt)
         {
             if (string.IsNullOrEmpty(message))
-                return "";
+                return string.Empty;
             CheckEncryptionData(encryptionKey, encryptionSalt);
             byte[] clearBytes = Encoding.Unicode.GetBytes(message);
             using (Aes encryptor = Aes.Create())
@@ -34,10 +34,11 @@ namespace MTLServiceBot.Assistants
             }
             return message;
         }
+
         public static string Decrypt(string cipherText, string encryptionKey, string encryptionSalt)
         {
             if (string.IsNullOrEmpty(cipherText))
-                return "";
+                return string.Empty;
             CheckEncryptionData(encryptionKey, encryptionSalt);
             cipherText = cipherText.Replace(" ", "+");
             byte[] cipherBytes = Convert.FromBase64String(cipherText);
@@ -62,12 +63,13 @@ namespace MTLServiceBot.Assistants
             }
             return cipherText;
         }
+
         private static void CheckEncryptionData(string encryptionKey, string encryptionSalt)
         {
             if (string.IsNullOrEmpty(encryptionKey))
-                throw new ArgumentException("Необходимо указать параметр ключа шифрования!", "encryptionKey");
+                throw new ArgumentException(TextConsts.EncryptionKeyRequiredError, nameof(encryptionKey));
             if (string.IsNullOrEmpty(encryptionSalt))
-                throw new ArgumentException("Необходимо указать параметр модификатора входа хэш-функции шифрования!", "encryptionSalt");
+                throw new ArgumentException(TextConsts.EncryptionSaltRequiredError, nameof(encryptionSalt));
         }
     }
 }

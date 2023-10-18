@@ -91,7 +91,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             Session session, ServiceTask serviceTask)
         {
             var api = new ServiceAPI(session);
-            var response = await api.ChangeServiceTaskStatus(serviceTask);
+            var response = await api.ChangeServiceTaskStatusAsync(serviceTask);
             if (!response.IsSuccess)
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
@@ -129,7 +129,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (taskIdParts.Length != 2)
                 return serviceTask;
             var api = new ServiceAPI(session);
-            var response = await api.GetServiceTasks(taskIdParts[0], taskIdParts[1]);
+            var response = await api.GetServiceTasksAsync(taskIdParts[0], taskIdParts[1]);
             if (!response.IsSuccess)
                 return serviceTask;
 
@@ -143,7 +143,5 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             return serviceTask;
         }
-
-        
     }
 }

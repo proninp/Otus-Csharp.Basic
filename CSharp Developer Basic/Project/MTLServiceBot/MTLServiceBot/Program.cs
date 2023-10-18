@@ -1,7 +1,4 @@
 ﻿using MTLServiceBot.Bot;
-using MTLServiceBot.SQL;
-using MTLServiceBot.Users;
-using Telegram.Bot;
 
 namespace MTLServiceBot
 {
@@ -15,7 +12,5 @@ namespace MTLServiceBot
             _bot.RunBot();
             Console.ReadKey();
         }
-
-        
     }
 }

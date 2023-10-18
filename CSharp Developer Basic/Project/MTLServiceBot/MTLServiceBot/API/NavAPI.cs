@@ -13,7 +13,7 @@ namespace MTLServiceBot.API
         {
         }
 
-        public async Task<ApiResponse> SendApiRequset(ApiRequest apiRequest)
+        public async Task<ApiResponse> SendApiRequsetAsync(ApiRequest apiRequest)
         {
             var apiResponseStatus = ApiResponseStatus.Error; 
             var responseText = string.Empty;
@@ -28,7 +28,7 @@ namespace MTLServiceBot.API
 
                     using (var response = await _httpClient.SendAsync(request))
                     {
-                        responseText = await GetHttpApiResponse(response);
+                        responseText = await GetHttpApiResponseAsync(response);
                         apiResponseStatus = GetApiResponseStatus(response);
                     }
                 }
@@ -59,7 +59,7 @@ namespace MTLServiceBot.API
             request.Content = content;
         }
 
-        private async Task<string> GetHttpApiResponse(HttpResponseMessage? httpResponse)
+        private async Task<string> GetHttpApiResponseAsync(HttpResponseMessage? httpResponse)
         {
             if (httpResponse is null || !httpResponse.IsSuccessStatusCode)
             {
