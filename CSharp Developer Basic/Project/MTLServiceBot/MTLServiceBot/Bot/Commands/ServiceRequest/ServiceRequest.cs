@@ -73,9 +73,14 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
                 return false;
             }
 
-            if (serviceTasksList is null || serviceTasksList.Count == 0)
+            if (serviceTasksList is null)
             {
                 SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, LogStatus.Warning);
+                return false;
+            }
+            if (serviceTasksList.Count == 0)
+            {
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.ServiceTasksListEmpty, LogStatus.Warning);
                 return false;
             }
             return true;

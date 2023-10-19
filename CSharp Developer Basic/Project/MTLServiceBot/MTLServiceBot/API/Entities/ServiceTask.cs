@@ -139,6 +139,7 @@ namespace MTLServiceBot.API.Entities
             AppendMarkDownParameterLine(sb, "Оборудование", Equipment);
             AppendMarkDownParameterLine(sb, "Серийный Номер", SerialNumber);
             AppendMarkDownParameterLine(sb, "Описание", ServiceRequestDescription);
+            AppendMarkDownParameterLine(sb, "Добавлено файлов", AttachedFilesCount);
             return sb.ToString();
         }
 
@@ -165,16 +166,16 @@ namespace MTLServiceBot.API.Entities
             _ => ""
         };
 
+        private void AppendMarkDownParameterLine(StringBuilder sb, string name, int value)
+        {
+            if (value > 0)
+                AppendMarkDownParameterLine(sb, name, value.ToString());
+        }
+
         private void AppendMarkDownParameterLine(StringBuilder sb, string name, string value)
         {
             if (!string.IsNullOrEmpty(value))
                 sb.AppendLine($"{name}: <code>{value}</code>");
-        }
-
-        private void WriteProperty(JsonWriter writer, string name, string value)
-        {
-            writer.WritePropertyName(name);
-            writer.WriteValue(value);
         }
     }
 }
