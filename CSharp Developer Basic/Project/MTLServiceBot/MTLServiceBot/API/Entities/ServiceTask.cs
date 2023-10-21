@@ -1,6 +1,7 @@
 ﻿using MTLServiceBot.Assistants;
 using MTLServiceBot.Bot.Commands.ServiceRequest;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -35,6 +36,10 @@ namespace MTLServiceBot.API.Entities
         public string Status { get; set; } = "";
         [JsonPropertyName("StatusML")]
         public string StatusML { get; set; } = "";
+        [JsonPropertyName("Owner")]
+        public string Owner { get; set; } = "";
+        [JsonPropertyName("Owner_Name")]
+        public string OwnerName { get; set; } = "";
         [JsonPropertyName("Executor")]
         public string Executor { get; set; } = "";
         [JsonPropertyName("Executors")]
@@ -132,6 +137,7 @@ namespace MTLServiceBot.API.Entities
             AppendMarkDownParameterLine(sb, "Запрос", RequestNo);
             AppendMarkDownParameterLine(sb, "Задача", TaskNo);
             AppendMarkDownParameterLine(sb, "Статус", StatusML);
+            AppendMarkDownParameterLine(sb, "Владелец", new String[] { Owner, OwnerName});
             AppendMarkDownParameterLine(sb, "Исполнитель", Executor);
             AppendMarkDownParameterLine(sb, "Наименование", Name);
             AppendMarkDownParameterLine(sb, "Адрес", Address);
@@ -165,6 +171,17 @@ namespace MTLServiceBot.API.Entities
             ServiceTaskStatus.Execution => "Закрыть",
             _ => ""
         };
+        private void AppendMarkDownParameterLine(StringBuilder sb, string name, string[] values)
+        {
+            if (values.All(s => string.IsNullOrEmpty(s)))
+                return;
+            if (string.IsNullOrEmpty(OwnerName))
+                sb.AppendLine($"{name}: <code>{Owner}</code>");
+            else if (string.IsNullOrEmpty(Owner))
+                sb.AppendLine($"{name}: <code>{OwnerName}</code>");
+            else
+                sb.AppendLine($"{name}: <code>{OwnerName} ({Owner})</code>");
+        }
 
         private void AppendMarkDownParameterLine(StringBuilder sb, string name, int value)
         {

@@ -16,6 +16,7 @@ namespace MTLServiceBot.API
         private static string _addNetworkFileApiUrl = $"{_mailApiUrl}/AddTelegramFile";
         private static string _getTaskFilesListUrl = $"{_mailApiUrl}/ServiceFilesList";
         private static string _addCommentApiUrl = $"{_mailApiUrl}/AddRequestTaskComment";
+        private static string _otpgenApiUrl = $"{_mailApiUrl}/ChallengeOtp";
         
         private readonly NavAPI _api;
         private readonly Session _session;
@@ -45,13 +46,13 @@ namespace MTLServiceBot.API
             if (string.IsNullOrEmpty(requestNo) || string.IsNullOrEmpty(taskNo))
             {
                 apiRequest = new ApiRequest(_serviceTasksApiUrl, HttpMethod.Get, _session.User.GetTokenAuthHeader());
-                return await SendServiceRequestAsync(apiRequest);
+                return await SendNavRequestAsync(apiRequest);
             }
 
             apiRequest = new ApiRequest(string.Format(_serviceTaskApiUrl, requestNo, taskNo),
                 HttpMethod.Get, _session.User.GetTokenAuthHeader());
 
-            return await SendServiceRequestAsync(apiRequest);
+            return await SendNavRequestAsync(apiRequest);
         }
 
         public async Task<ApiResponse> ChangeServiceTaskStatusAsync(ServiceTask task)
@@ -59,7 +60,7 @@ namespace MTLServiceBot.API
             var apiRequest = new ApiRequest(_setTaskStatusApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewStatusContent());
 
-            return await SendServiceRequestAsync(apiRequest);
+            return await SendNavRequestAsync(apiRequest);
         }
 
         public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, string filePath, string filename, string fileDescription = "")
@@ -67,7 +68,7 @@ namespace MTLServiceBot.API
             var apiRequest = new ApiRequest(_addNetworkFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewNetworkFileContent(filename, filePath, fileDescription));
 
-            return await SendServiceRequestAsync(apiRequest);
+            return await SendNavRequestAsync(apiRequest);
         }
 
         public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, Stream fileStream, string filename, string fileDescription = "")
@@ -76,10 +77,16 @@ namespace MTLServiceBot.API
             var apiRequest = new ApiRequest(_addFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), fileContentStream);
 
-            return await SendServiceRequestAsync(apiRequest);
+            return await SendNavRequestAsync(apiRequest);
         }
 
-        private async Task<ApiResponse> SendServiceRequestAsync(ApiRequest apiRequest)
+        public async Task<ApiResponse> GetIntegrisPassAsync(string challenge)
+        {
+            var apiRequest = new ApiRequest(_otpgenApiUrl, HttpMethod.Post, _session.User.GetTokenAuthHeader(), new StringContent(challenge));
+            return await SendNavRequestAsync(apiRequest);
+        }
+
+        private async Task<ApiResponse> SendNavRequestAsync(ApiRequest apiRequest)
         {
             ApiResponse authResponse;
             // Если после перезапуска приложения для сохраненной сессии еще не был получен новый токен

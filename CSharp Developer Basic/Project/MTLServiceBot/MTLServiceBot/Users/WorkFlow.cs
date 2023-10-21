@@ -5,6 +5,7 @@
         None,
         Login,
         ServiceRequests,
-        ServiceRequestAddFile
+        ServiceRequestAddFile,
+        Otpgen
     }
 }

@@ -7,6 +7,7 @@
         public const string LoginCommandName = "/login";
         public const string LogoutCommandName = "/logout";
         public const string ServiceTasksCommandName = "/servicetasks";
+        public const string OtpgenCommandName = "/otpgen";
         public const string HelpCommandName = "/help";
         public const string UnknownCommandName = "/unknown";
 
@@ -15,6 +16,7 @@
         public const string LoginCommandDescription = "Инициирует процесс авторизации";
         public const string LogoutCommandDescription = "Завершает сессию пользователя";
         public const string ServiceCommandDescription = "Список сервисных запросов";
+        public const string OtpgenCommandDescription = "Получение пароля Integris";
         public const string HelpCommandDescription = "Инструкции по использованию бота";
         public const string UnknownCommandDescription = "Оповещает о неизвестной команде";
 

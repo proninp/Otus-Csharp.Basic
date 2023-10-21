@@ -2,6 +2,7 @@
 using MTLServiceBot.Bot.Commands;
 using MTLServiceBot.Bot.Commands.ServiceRequest;
 using MTLServiceBot.Users;
+using System.Collections.Concurrent;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -11,11 +12,13 @@ namespace MTLServiceBot.Bot
 {
     public class TgUpdateHandler
     {
-        private static Dictionary<long, Session> _userSessions = new Dictionary<long, Session>();
+        private static ConcurrentDictionary <long, Session> _userSessions = new ConcurrentDictionary<long, Session>();
         private readonly Command _unknownCommand;
         private readonly Command _login;
         private readonly Command _logout;
         private readonly Command _serviceTasksRequest;
+        private readonly Command _otpgen;
+
         private readonly List<Command> _commands;
         private readonly Dictionary<WorkFlow, Command> _workflows;
         public List<Command> Commands { get => _commands; }
@@ -25,6 +28,7 @@ namespace MTLServiceBot.Bot
             _login = new Login(TextConsts.LoginCommandName, TextConsts.LoginCommandDescription, false);
             _logout = new Logout(TextConsts.LogoutCommandName, TextConsts.LogoutCommandDescription, true);
             _serviceTasksRequest = new ServiceRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
+            _otpgen = new Otpgen(TextConsts.OtpgenCommandName, TextConsts.OtpgenCommandDescription, true);
             _unknownCommand = new Unknown(TextConsts.UnknownCommandName, TextConsts.UnknownCommandDescription, false);
             _commands = new()
             {
@@ -32,6 +36,7 @@ namespace MTLServiceBot.Bot
                 _login,
                 _logout,
                 _serviceTasksRequest,
+                _otpgen,
                 new Stop(TextConsts.StopCommandName, TextConsts.StopCommandDescription, false)
             };
 
@@ -43,6 +48,7 @@ namespace MTLServiceBot.Bot
                 { WorkFlow.Login, _login },
                 { WorkFlow.ServiceRequests, _serviceTasksRequest },
                 { WorkFlow.ServiceRequestAddFile, _serviceTasksRequest },
+                { WorkFlow.Otpgen, _otpgen },
             };
         }
 
@@ -124,7 +130,7 @@ namespace MTLServiceBot.Bot
             else
             {
                 session = new Session(userId, update.Chat.Id, update.From.Username, DateTime.Now, DateTime.Parse("1753-01-01"));
-                _userSessions.Add(userId, session);
+                _userSessions.TryAdd(userId, session);
             }
             TgUser? user = session.User;
             if (user is null)

@@ -15,7 +15,7 @@ namespace MTLServiceBot.API
 
         public async Task<ApiResponse> SendApiRequsetAsync(ApiRequest apiRequest)
         {
-            var apiResponseStatus = ApiResponseStatus.Error; 
+            var apiResponseStatus = ApiResponseStatus.Error;
             var responseText = string.Empty;
             try
             {
@@ -24,7 +24,7 @@ namespace MTLServiceBot.API
                     AddRequestHeaders(request, apiRequest.AuthHeader);
                     GetContent(request, apiRequest);
 
-                    AssistLog.ColoredPrint(request.ToString(), LogStatus.Attention); // TODO Logging
+                    AssistLog.ColoredPrint(GetRequestLogInfo(request), LogStatus.Attention); // TODO Logging
 
                     using (var response = await _httpClient.SendAsync(request))
                     {
@@ -53,7 +53,7 @@ namespace MTLServiceBot.API
             }
             if (apiRequest.ContentStream is null)
                 return;
-            
+
             var content = new StreamContent(apiRequest.ContentStream);
             content.Headers.Add("Content-Type", "application/json; charset=utf-8");
             request.Content = content;
@@ -66,7 +66,7 @@ namespace MTLServiceBot.API
                 LogHttpResponseError(httpResponse);
                 return string.Empty;
             }
-            AssistLog.ColoredPrint(httpResponse.ToString(), LogStatus.Attention); // TODO Logging
+            AssistLog.ColoredPrint(GetResponseLogInfo(httpResponse)); // TODO Logging
             using var responseContent = httpResponse.Content;
             var jsonResponse = await responseContent.ReadAsStringAsync();
             if (string.IsNullOrEmpty(jsonResponse))
@@ -103,6 +103,24 @@ namespace MTLServiceBot.API
         {
             request.Headers.Add(AppConfig.AcceptHeaderName, AppConfig.AcceptHeaderValue);
             request.Headers.Add(AppConfig.AuthHeaderName, authHeader);
+        }
+
+        private string GetRequestLogInfo(HttpRequestMessage httpRequest)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{nameof(httpRequest.Method)}: {httpRequest.Method}, ");
+            sb.Append($"{nameof(httpRequest.RequestUri)}: '/{httpRequest.RequestUri?.Segments.LastOrDefault()}', ");
+            sb.Append($"{nameof(httpRequest.Version)}: '{httpRequest.Version}'");
+            return sb.ToString();
+        }
+        
+        private string GetResponseLogInfo(HttpResponseMessage httpResponse)
+        {
+            var sb = new StringBuilder();
+            sb.Append($"{nameof(httpResponse.StatusCode)}: {httpResponse.StatusCode}, ");
+            sb.Append($"{nameof(httpResponse.ReasonPhrase)}: '{httpResponse.ReasonPhrase}', ");
+            sb.Append($"{nameof(httpResponse.Version)}: '{httpResponse.Version}'");
+            return sb.ToString();
         }
     }
 }
