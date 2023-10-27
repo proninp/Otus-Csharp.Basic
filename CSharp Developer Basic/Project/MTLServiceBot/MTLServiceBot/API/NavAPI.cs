@@ -9,10 +9,6 @@ namespace MTLServiceBot.API
     {
         private static readonly HttpClient _httpClient = new();
 
-        public NavAPI()
-        {
-        }
-
         public async Task<ApiResponse> SendApiRequsetAsync(ApiRequest apiRequest)
         {
             var apiResponseStatus = ApiResponseStatus.Error;

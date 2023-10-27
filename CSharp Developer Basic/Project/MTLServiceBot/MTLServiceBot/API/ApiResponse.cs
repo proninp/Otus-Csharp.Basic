@@ -27,11 +27,11 @@ namespace MTLServiceBot.API
         private string GetApiResponseMessage()
         {
             if (_status == ApiResponseStatus.Success)
-                return "";
+                return string.Empty;
             else if (_status == ApiResponseStatus.Unauthorized)
                 return TextConsts.UnauthorizedError;
-            else
-                return TextConsts.ServerConnectionError;
+
+            return TextConsts.ServerConnectionError;
         }
     }
 }

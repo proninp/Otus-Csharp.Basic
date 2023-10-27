@@ -41,9 +41,7 @@ namespace MTLServiceBot.Users
         private string GetAuthValue(string credentials)
         {
             if (string.IsNullOrEmpty(credentials))
-                return "";
-            if (string.IsNullOrEmpty(credentials))
-                return "";
+                return string.Empty;
             var credBytes = Encoding.ASCII.GetBytes(credentials);
             var authHeader = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(credBytes));
             return authHeader.ToString();
