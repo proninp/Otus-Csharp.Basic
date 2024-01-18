@@ -3,6 +3,7 @@ using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
+using Serilog;
 using System.Net;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -90,7 +91,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             else
             {
                 SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError,
-                    serviceTask.Id), LogStatus.Error, apiResponse.Message);
+                    serviceTask.Id), Serilog.Events.LogEventLevel.Error, apiResponse.Message);
             }
         }
 
@@ -190,7 +191,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 SendNotification(botClient, update.Chat, replyButtons,
                     string.Format(TextConsts.AddFileHandleCopyError, taskId),
-                    LogStatus.Error, ex.Message);
+                    Serilog.Events.LogEventLevel.Error, ex.Message);
                 return false;
             }
         }

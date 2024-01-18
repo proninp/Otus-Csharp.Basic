@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
+using Serilog;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -39,9 +40,9 @@ namespace MTLServiceBot.Bot.Commands
         }
 
         protected virtual void SendNotification(ITelegramBotClient botClient, Chat chat, IReplyMarkup? replyButtons,
-            string tgMessage, LogStatus logStatus = LogStatus.Information, string logMessage = "")
+            string tgMessage, Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Debug, string logMessage = "")
         {
-            SendLogMessage(tgMessage, logStatus, logMessage);
+            SendLogMessage(tgMessage, level, logMessage);
             if (replyButtons is not null)
                 _ = botClient.SendTextMessageAsync(chat, tgMessage, parseMode: ParseMode.Html, replyMarkup: replyButtons);
             else
@@ -49,10 +50,10 @@ namespace MTLServiceBot.Bot.Commands
         }
 
         protected virtual void SendNotification(ITelegramBotClient botClient, Chat chat, string tgMessage,
-            LogStatus logStatus = LogStatus.Information, string logMessage = "") => 
-            SendNotification(botClient, chat, null, tgMessage, logStatus, logMessage);
+            Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Debug, string logMessage = "") => 
+            SendNotification(botClient, chat, null, tgMessage, level, logMessage);
 
-        private void SendLogMessage(string tgMessage, LogStatus logStatus = LogStatus.Information, string logMessage = "")
+        private void SendLogMessage(string tgMessage, Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Debug, string logMessage = "")
         {
             var sb = new StringBuilder();
             sb.AppendLine(string.Format(TextConsts.LogNotificationDescription, Name));
@@ -60,7 +61,9 @@ namespace MTLServiceBot.Bot.Commands
             if (!string.IsNullOrEmpty(logMessage))
                 sb.AppendLine(string.Format(TextConsts.LogDescription, logMessage));
 
-            AssistLog.ColoredPrint(sb.ToString(), logStatus);
+            //AssistLog.ColoredPrint(sb.ToString(), logStatus);
+            Log.Write(level, sb.ToString());
+            
         }
     }
 }

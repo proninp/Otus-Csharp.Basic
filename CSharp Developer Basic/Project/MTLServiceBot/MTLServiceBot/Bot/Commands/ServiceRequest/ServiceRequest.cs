@@ -28,7 +28,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var apiResponse = await api.GetServiceTasksAsync();
             if (!apiResponse.IsSuccess)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), apiResponse.Message, LogStatus.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), apiResponse.Message, Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 
@@ -69,18 +69,18 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             catch (Exception ex)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, LogStatus.Error, ex.ToString());
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, Serilog.Events.LogEventLevel.Error, ex.ToString());
                 return false;
             }
 
             if (serviceTasksList is null)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, LogStatus.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             if (serviceTasksList.Count == 0)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.ServiceTasksListEmpty, LogStatus.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.ServiceTasksListEmpty, Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             return true;
@@ -95,7 +95,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (!numberFormat.isValidNumberFormat)
             {
                 SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
-                    TextConsts.ServiceTasksWorkflowIncorrectFormat, LogStatus.Warning);
+                    TextConsts.ServiceTasksWorkflowIncorrectFormat, Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 
@@ -105,7 +105,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
                     string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
-                    LogStatus.Warning);
+                    Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 

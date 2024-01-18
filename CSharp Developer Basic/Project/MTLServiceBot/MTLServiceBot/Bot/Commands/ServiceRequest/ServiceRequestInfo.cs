@@ -2,6 +2,7 @@
 using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
+using Serilog;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -44,7 +45,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (serviceTask is null)
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.CBCmdServiceTaskNotFound, cmdTaskId), LogStatus.Warning);
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.CBCmdServiceTaskNotFound, cmdTaskId), Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 
@@ -65,7 +66,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var command = CallbackCommand.None;
             if (callback is null || string.IsNullOrEmpty(callback.Data))
             {
-                AssistLog.ColoredPrint(TextConsts.CBCmdDataEmpty, LogStatus.Error);
+                //AssistLog.ColoredPrint(TextConsts.CBCmdDataEmpty, LogStatus.Error);
+                Log.Warning(TextConsts.CBCmdDataEmpty);
                 return ("", command);
             }
 
@@ -73,7 +75,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var cbCmdPair = _callBackCommands.FirstOrDefault(cq => data.StartsWith(cq.Value));
             if (!data.Contains(TextConsts.CBCmdDataSeparator) || cbCmdPair.Equals(default(KeyValuePair<CallbackCommand, string>)))
             {
-                AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataNotRecognized, data), LogStatus.Error); // TODO Logging
+                //AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataNotRecognized, data), LogStatus.Error); // TODO Logging
+                Log.Warning(string.Format(TextConsts.CBCmdDataNotRecognized, data));
                 return ("", command);
             }
 
@@ -81,7 +84,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var dataList = data.Split(TextConsts.CBCmdDataSeparator);
             if (dataList.Length != 2)
             {
-                AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataUndefined, callback.Data), LogStatus.Error); // TODO Logging
+                //AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataUndefined, callback.Data), LogStatus.Error); // TODO Logging
+                Log.Warning(string.Format(TextConsts.CBCmdDataUndefined, callback.Data));
                 return ("", command);
             }
             return (dataList[1], command);
@@ -96,7 +100,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 if (response.Status == ApiResponseStatus.Unauthorized)
                     _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                SendNotification(botClient, update.Chat, response.Message, LogStatus.Warning);
+                SendNotification(botClient, update.Chat, response.Message, Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             return true;
@@ -110,7 +114,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
                 SendNotification(botClient, update.Chat,
-                    string.Format(TextConsts.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo), LogStatus.Warning);
+                    string.Format(TextConsts.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo), Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             // Выводим обновленную информацию в то же сообщение, обновляем кнопки
@@ -139,7 +143,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             catch (Exception ex)
             {
-                AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
+                //AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
+                Log.Error(ex.ToString());
             }
             return serviceTask;
         }

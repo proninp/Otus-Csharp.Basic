@@ -1,5 +1,6 @@
 ﻿using MTLServiceBot.Assistants;
 using Newtonsoft.Json.Linq;
+using Serilog;
 using System.Net;
 using System.Text;
 
@@ -20,7 +21,8 @@ namespace MTLServiceBot.API
                     AddRequestHeaders(request, apiRequest.AuthHeader);
                     GetContent(request, apiRequest);
 
-                    AssistLog.ColoredPrint(GetRequestLogInfo(request), LogStatus.Attention); // TODO Logging
+                    //AssistLog.ColoredPrint(GetRequestLogInfo(request), LogStatus.Attention); // TODO Logging
+                    Log.Debug(GetRequestLogInfo(request));
 
                     using (var response = await _httpClient.SendAsync(request))
                     {
@@ -31,7 +33,8 @@ namespace MTLServiceBot.API
             }
             catch (Exception ex)
             {
-                AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
+                //AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
+                Log.Error(ex.ToString());
             }
             var apiResponse = new ApiResponse(apiResponseStatus, responseText);
             return (apiResponse);
@@ -62,7 +65,8 @@ namespace MTLServiceBot.API
                 LogHttpResponseError(httpResponse);
                 return string.Empty;
             }
-            AssistLog.ColoredPrint(GetResponseLogInfo(httpResponse)); // TODO Logging
+            //AssistLog.ColoredPrint(GetResponseLogInfo(httpResponse)); // TODO Logging
+            Log.Debug(GetResponseLogInfo(httpResponse));
             using var responseContent = httpResponse.Content;
             var jsonResponse = await responseContent.ReadAsStringAsync();
             if (string.IsNullOrEmpty(jsonResponse))
@@ -92,7 +96,8 @@ namespace MTLServiceBot.API
                 sb.AppendLine(httpResponse.ToString());
             else
                 sb.AppendLine($"{nameof(httpResponse)} = null");
-            AssistLog.ColoredPrint(sb.ToString(), LogStatus.Error);
+            //AssistLog.ColoredPrint(sb.ToString(), LogStatus.Error);
+            Log.Error(sb.ToString());
         }
 
         private void AddRequestHeaders(HttpRequestMessage request, string authHeader)

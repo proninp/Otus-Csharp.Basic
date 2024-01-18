@@ -2,6 +2,7 @@
 using MTLServiceBot.Bot.Commands;
 using MTLServiceBot.Bot.Commands.ServiceRequest;
 using MTLServiceBot.Users;
+using Serilog;
 using System.Collections.Concurrent;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -65,7 +66,8 @@ namespace MTLServiceBot.Bot
             var commandText = update.Message!.Text ?? "";
             var logText = string.Format(TextConsts.UpdateNewReceivingLog, update.UpdateType.ToString(),
                 update.Chat!.Id, update.From!.Id, update.From.Username, commandText);
-            AssistLog.ColoredPrint(logText, LogStatus.Warning);
+            //AssistLog.ColoredPrint(logText, LogStatus.Warning);
+            Log.Debug(logText);
 
             Session session = GetUserSession(update);
             Command command = GetCommand(commandText, session);
@@ -77,7 +79,8 @@ namespace MTLServiceBot.Bot
             }
             catch (Exception e)
             {
-                AssistLog.ColoredPrint(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message), LogStatus.Error);
+                //AssistLog.ColoredPrint(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message), LogStatus.Error);
+                Log.Error(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message));
             }
         }
 
@@ -110,6 +113,7 @@ namespace MTLServiceBot.Bot
             {
                 var logMsg = string.Format(TextConsts.UpdateMessageFromBotError, msg.Chat.Id, from.Id, from.Username, msg.Text);
                 AssistLog.ColoredPrint(logMsg, LogStatus.Attention);
+                Log.Warning(logMsg);
                 return false;
             }
             return true;
@@ -156,7 +160,8 @@ namespace MTLServiceBot.Bot
 
         private void ShowWarning(ITelegramBotClient botClient, Message? msg, string warningText)
         {
-            AssistLog.ColoredPrint(warningText, LogStatus.Error);
+            //AssistLog.ColoredPrint(warningText, LogStatus.Error);
+            Log.Error(warningText);
             if (msg is not null && msg.Chat is not null)
                 botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());
         }
