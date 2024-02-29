@@ -1,5 +1,4 @@
 ﻿using MTLServiceBot.API.Entities;
-using MTLServiceBot.Assistants;
 using MTLServiceBot.Users;
 
 namespace MTLServiceBot.API
@@ -17,13 +16,13 @@ namespace MTLServiceBot.API
 
         public async Task<ApiResponse> AuthorizeAsync()
         {
-            var authApiRequest = new ApiRequest(AppConfig.AuthApiUrl, HttpMethod.Post, _session.User.GetUserPassAuthHeader());
+            var authApiRequest = new ApiRequest(AppConfig.Instance.AuthApiUrl, HttpMethod.Post, _session.User.GetUserPassAuthHeader());
             var authApiResponse = await _api.SendApiRequsetAsync(authApiRequest);
 
             if (authApiResponse.IsSuccess && !string.IsNullOrEmpty(authApiResponse.ResponseText))
             {
                 _session.SetSessionAuthorization(authApiResponse.ResponseText);
-                authApiResponse.Message = string.Format(TextConsts.LoginSuccessMsg, _session.User.Name);
+                authApiResponse.Message = string.Format(AppConfig.Instance.LoginSuccessMsg, _session.User.Name);
             }
             return authApiResponse;
         }
@@ -33,11 +32,11 @@ namespace MTLServiceBot.API
             ApiRequest apiRequest;
             if (string.IsNullOrEmpty(requestNo) || string.IsNullOrEmpty(taskNo))
             {
-                apiRequest = new ApiRequest(AppConfig.ServiceTasksApiUrl, HttpMethod.Get, _session.User.GetTokenAuthHeader());
+                apiRequest = new ApiRequest(AppConfig.Instance.ServiceTasksApiUrl, HttpMethod.Get, _session.User.GetTokenAuthHeader());
                 return await SendNavRequestAsync(apiRequest);
             }
 
-            apiRequest = new ApiRequest(string.Format(AppConfig.ServiceTaskApiUrl, requestNo, taskNo),
+            apiRequest = new ApiRequest(string.Format(AppConfig.Instance.ServiceTaskApiUrl, requestNo, taskNo),
                 HttpMethod.Get, _session.User.GetTokenAuthHeader());
 
             return await SendNavRequestAsync(apiRequest);
@@ -45,7 +44,7 @@ namespace MTLServiceBot.API
 
         public async Task<ApiResponse> ChangeServiceTaskStatusAsync(ServiceTask task)
         {
-            var apiRequest = new ApiRequest(AppConfig.SetTaskStatusApiUrl, HttpMethod.Post,
+            var apiRequest = new ApiRequest(AppConfig.Instance.SetTaskStatusApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewStatusContent());
 
             return await SendNavRequestAsync(apiRequest);
@@ -53,7 +52,7 @@ namespace MTLServiceBot.API
 
         public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, string filePath, string filename, string fileDescription = "")
         {
-            var apiRequest = new ApiRequest(AppConfig.AddNetworkFileApiUrl, HttpMethod.Post,
+            var apiRequest = new ApiRequest(AppConfig.Instance.AddNetworkFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), task.GetNewNetworkFileContent(filename, filePath, fileDescription));
 
             return await SendNavRequestAsync(apiRequest);
@@ -62,7 +61,7 @@ namespace MTLServiceBot.API
         public async Task<ApiResponse> AddNewFileToServiceTaskAsync(ServiceTask task, Stream fileStream, string filename, string fileDescription = "")
         {
             using var fileContentStream = task.GetNewFileStreamContent(fileStream, filename, fileDescription);
-            var apiRequest = new ApiRequest(AppConfig.AddFileApiUrl, HttpMethod.Post,
+            var apiRequest = new ApiRequest(AppConfig.Instance.AddFileApiUrl, HttpMethod.Post,
                 _session.User.GetTokenAuthHeader(), fileContentStream);
 
             return await SendNavRequestAsync(apiRequest);
@@ -70,7 +69,7 @@ namespace MTLServiceBot.API
 
         public async Task<ApiResponse> GetIntegrisPassAsync(string challenge)
         {
-            var apiRequest = new ApiRequest(AppConfig.OtpgenApiUrl, HttpMethod.Post, _session.User.GetTokenAuthHeader(), new StringContent(challenge));
+            var apiRequest = new ApiRequest(AppConfig.Instance.OtpgenApiUrl, HttpMethod.Post, _session.User.GetTokenAuthHeader(), new StringContent(challenge));
             return await SendNavRequestAsync(apiRequest);
         }
 

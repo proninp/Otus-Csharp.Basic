@@ -21,7 +21,6 @@ namespace MTLServiceBot.API
                     AddRequestHeaders(request, apiRequest.AuthHeader);
                     GetContent(request, apiRequest);
 
-                    //AssistLog.ColoredPrint(GetRequestLogInfo(request), LogStatus.Attention); // TODO Logging
                     Log.Debug(GetRequestLogInfo(request));
 
                     using (var response = await _httpClient.SendAsync(request))
@@ -33,7 +32,7 @@ namespace MTLServiceBot.API
             }
             catch (Exception ex)
             {
-                //AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
+                ex.Data.Add("url", apiRequest.Url);
                 Log.Error(ex.ToString());
             }
             var apiResponse = new ApiResponse(apiResponseStatus, responseText);
@@ -65,7 +64,6 @@ namespace MTLServiceBot.API
                 LogHttpResponseError(httpResponse);
                 return string.Empty;
             }
-            //AssistLog.ColoredPrint(GetResponseLogInfo(httpResponse)); // TODO Logging
             Log.Debug(GetResponseLogInfo(httpResponse));
             using var responseContent = httpResponse.Content;
             var jsonResponse = await responseContent.ReadAsStringAsync();
@@ -96,14 +94,13 @@ namespace MTLServiceBot.API
                 sb.AppendLine(httpResponse.ToString());
             else
                 sb.AppendLine($"{nameof(httpResponse)} = null");
-            //AssistLog.ColoredPrint(sb.ToString(), LogStatus.Error);
             Log.Error(sb.ToString());
         }
 
         private void AddRequestHeaders(HttpRequestMessage request, string authHeader)
         {
-            request.Headers.Add(AppConfig.AcceptHeaderName, AppConfig.AcceptHeaderValue);
-            request.Headers.Add(AppConfig.AuthHeaderName, authHeader);
+            request.Headers.Add(AppConfig.Instance.AcceptHeaderName, AppConfig.Instance.AcceptHeaderValue);
+            request.Headers.Add(AppConfig.Instance.AuthHeaderName, authHeader);
         }
 
         private string GetRequestLogInfo(HttpRequestMessage httpRequest)

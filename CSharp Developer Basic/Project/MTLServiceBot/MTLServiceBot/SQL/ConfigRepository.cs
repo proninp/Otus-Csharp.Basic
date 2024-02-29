@@ -15,7 +15,7 @@ namespace MTLServiceBot.SQL
             {
                 botId = GetSetupId()
             });
-            return GetCheckedSetupFieldValue(token, TextConsts.ConfigRepoTokenError);
+            return GetCheckedSetupFieldValue(token, AppConfig.ConfigRepoTokenError);
         }
 
         public static string GetApiUrl()
@@ -26,7 +26,7 @@ namespace MTLServiceBot.SQL
             {
                 botId = GetSetupId()
             });
-            return GetCheckedSetupFieldValue(apiUrl, TextConsts.ConfigRepoApiLinkError);
+            return GetCheckedSetupFieldValue(apiUrl, AppConfig.ConfigRepoApiLinkError);
         }
 
         public static string GetDownloadedFilesDirectory()
@@ -37,7 +37,7 @@ namespace MTLServiceBot.SQL
             {
                 botId = GetSetupId()
             });
-            return GetCheckedSetupFieldValue(localPath, TextConsts.ConfigRepoTgFilesError);
+            return GetCheckedSetupFieldValue(localPath, AppConfig.ConfigRepoTgFilesError);
         }
 
         public static string GetSharedNetworkDirectory()
@@ -48,7 +48,7 @@ namespace MTLServiceBot.SQL
             {
                 botId = GetSetupId()
             });
-            return GetCheckedSetupFieldValue(networkPath, TextConsts.ConfigRepoSharedNetworkError);
+            return GetCheckedSetupFieldValue(networkPath, AppConfig.ConfigRepoSharedNetworkError);
         }
 
         public static int GetAvailabelAuthorizationCount()
@@ -60,7 +60,7 @@ namespace MTLServiceBot.SQL
                 botId = GetSetupId()
             });
             if (attemptsCount == 0)
-                throw new InvalidOperationException(TextConsts.ConfigRepoAvailAuthCountError);
+                throw new InvalidOperationException(AppConfig.ConfigRepoAvailAuthCountError);
             return attemptsCount;
         }
 
@@ -72,8 +72,8 @@ namespace MTLServiceBot.SQL
             {
                 botId = GetSetupId()
             });
-            return (GetCheckedSetupFieldValue(credentials.login, TextConsts.ConfigRepoNetworkLoginError), 
-                GetCheckedSetupFieldValue(credentials.pswCipher, TextConsts.ConfigRepoNetworkPswError));
+            return (GetCheckedSetupFieldValue(credentials.login, AppConfig.ConfigRepoNetworkLoginError), 
+                GetCheckedSetupFieldValue(credentials.pswCipher, AppConfig.ConfigRepoNetworkPswError));
         }
 
         public static bool GetSendAsFileSetup()
@@ -90,7 +90,7 @@ namespace MTLServiceBot.SQL
 
         private static string GetSetupId()
         {
-            return GetCheckedSetupFieldValue(AppConfig.SetupId ?? "", TextConsts.ConfigRepoAppSetupIdError);
+            return GetCheckedSetupFieldValue(AppConfig.SetupId ?? "", AppConfig.ConfigRepoAppSetupIdError);
         }
 
         private static string GetCheckedSetupFieldValue(string value, string errorMsg)

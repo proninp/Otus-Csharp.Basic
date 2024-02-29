@@ -1,0 +1,52 @@
+﻿{
+  "UpdateFailed": "Полученное обновление нераспознано",
+  "UpdateTypeUnknownLog": "Получен запрос с типом {0} для которого не предусмотрено обработчика",
+  "UpdateFromUnknown": "Нераспознан пользователь в сообщении {0}",
+  "UpdateTypeDataUnknown": "Нераспознан объект данных сообщения {0}",
+  "UpdateMessageTypeError": "Данный тип сообщений не поддерживается, для получения информации о работе бота воспользуйтесь командой ${HelpCommandName}",
+  "UpdateMessageFromBotError": "Получено сообщение в чате [{0}] от аккаунта [{1}], являющегося ботом с именем [{2}]:\n[{3}]\nСообщение от было проигнорировано",
+  "UpdateNewReceivingLog": "Получена команда c типом [{0}] в чате [{1}] от: [{2}] - [{3}]\nТекст команды:\n'{4}'",
+  "UpdateCommandExceptionTemplate": "Команда {0}, исключение: {1}",
+
+  "ServerConnectionError": "Ошибка соединения с сервером, выполните запрос позднее",
+  "UnauthorizedError": "Ошибка выполнения запроса - некорректные данные для авторизации",
+  "DeserializeJsonError": "Ошибка преобразования результатов выполения запроса, выполните запрос позденне",
+
+  "ServiceTasksListEmpty": "В системе не найдено доступных сервисных запросов",
+  "ChooseServiceRequestBtn": "Выберите сервисную заявку из списка",
+  "SingleServiceRequestUpdateFailureMsg": "Не удалось обновить информацию по сервисной заявке <code>[{0}; {1}]</code>",
+
+  "ServiceTasksWorkflowIncorrectFormat": "${STWFIncorrectFormatEx1}\n\n${STWFIncorrectFormatEx2}\n${STWFIncorrectFormatEx3}\n\n${STWFIncorrectFormatEx4}",
+  "STWFIncorrectFormatEx1": "Некорректный формат номера сервисной заявки",
+  "STWFIncorrectFormatEx2": "Для продолжения работы введите номер сервисной заявки в форматe:",
+  "STWFIncorrectFormatEx3": "<b>[Номер запроса ${SingleTaskNumberFormatSeparator}, Номер задачи]</b>",
+  "STWFIncorrectFormatEx4": "Или выберите другую команду из списка меню",
+
+  "ServiceTasksWorkflowNotFound": "${ServiceTasksWorkflowNotFoundEx1}${ServiceTasksWorkflowNotFoundEx2}${ServiceTasksWorkflowNotFoundEx3}",
+  "ServiceTasksWorkflowNotFoundEx1": "Не найдена сервисная заявка с номером:\n<b>{0}{2}{1}</b>\n",
+  "ServiceTasksWorkflowNotFoundEx2": "Для продолжения работы введите номер другой сервисной заявки\n",
+  "ServiceTasksWorkflowNotFoundEx3": "Или выберите другую команду из списка меню",
+
+  "CBCmdAddFileDescription": "Добавить вложение",
+  "CBCmdAddFileCallMsgDescription": "Отправьте вложение для закрепления к сервисному запросу <code>{0}</code>",
+  "CBCmdAddFileCallHandlerError": "Невозможно выполнить добавление файла, некорректное значение потока выполнения",
+  "CBCmdAddFileCallHandlerFileError": "${CBCmdAddFileCallHandlerFileErrorEx1}\n${CBCmdAddFileCallHandlerFileErrorEx2}",
+  "CBCmdAddFileCallHandlerFileErrorEx1": "Невозможно выполнить добавление файла для заявки <code>{0}</code>",
+  "CBCmdAddFileCallHandlerFileErrorEx2": "В полученном сообщении не найдено вложения допустимого типа",
+  "AddFileHandleIdError": "Ошибка добавления файла для заявки <code>{0}</code> - невозможно распознать Id полученного файла",
+  "AddFileHandleReceiveError": "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности получить файл от сервиса Telegram",
+  "AddFileHandleCopyError": "Ошибка добавления файла для заявки <code>{0}</code> - нет возможности сохранить принятый файл, попробуйте выполнить действие позднее",
+  "AddFileHandleAddedMsg": "К сервисной заявке <code>{0}</code> добавлен файл <code>{1}</code>",
+
+  "CBCmdDataEmpty": "Ошибка обработки. CallBackQuery. Данные команды CallbackQuery не содержат информации",
+  "CBCmdDataUndefined": "Ошибка обработки. Не удалось идентифицировать запрос CallBackQuery. Данные запроса: {0}",
+  "CBCmdDataNotRecognized": "Данные команды CallbackQuery не распознаны: '{0}'",
+  "CBCmdServiceTaskNotFound": "${CBCmdServiceTaskNotFoundEx1}\n${CBCmdServiceTaskNotFoundEx2}",
+  "CBCmdServiceTaskNotFoundEx1": "Сервисная задача {0} не найдена в списке доступных задач.",
+  "CBCmdServiceTaskNotFoundEx2": "Выполните команду ${ServiceTasksCommandName} повторно и попробуйте еще раз",
+
+  "LogNotificationDescription": "Уведомление при выполнении команды {0}:",
+  "LogDescription": "Сообщение лога:\n{0}",
+  "EncryptionKeyRequiredError": "Необходимо указать параметр ключа шифрования!",
+  "EncryptionSaltRequiredError": "Необходимо указать параметр модификатора входа хэш-функции шифрования!"
+}

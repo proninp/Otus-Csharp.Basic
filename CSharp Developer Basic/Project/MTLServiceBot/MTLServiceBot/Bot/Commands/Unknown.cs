@@ -1,7 +1,5 @@
-﻿using MTLServiceBot.Assistants;
-using MTLServiceBot.Users;
+﻿using MTLServiceBot.Users;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace MTLServiceBot.Bot.Commands
@@ -15,7 +13,7 @@ namespace MTLServiceBot.Bot.Commands
         public override Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session userSession)
         {
             _ = botClient.SendTextMessageAsync(update.Chat,
-                TextConsts.UnknownCommand,
+                AppConfig.Instance.UnknownCommandFullDescription,
                 replyMarkup: new ReplyKeyboardRemove());
             return Task.CompletedTask;
         }

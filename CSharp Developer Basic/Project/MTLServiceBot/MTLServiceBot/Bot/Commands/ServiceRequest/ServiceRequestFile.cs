@@ -3,11 +3,8 @@ using MTLServiceBot.API.Entities;
 using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
-using Serilog;
 using System.Net;
-using System.Threading.Tasks;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -20,7 +17,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             session.WorkFlowState = WorkFlow.ServiceRequestAddFile;
             session.WorkFlowTaskId = taskId;
             _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdAddFileCallMsgDescription, taskId),
+                    string.Format(AppConfig.Instance.CBCmdAddFileCallMsgDescription, taskId),
                     parseMode: ParseMode.Html);
         }
 
@@ -34,7 +31,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (serviceTask is null)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdServiceTaskNotFound, taskId),
+                    string.Format(AppConfig.Instance.CBCmdServiceTaskNotFound, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
                 return;
@@ -45,7 +42,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (string.IsNullOrEmpty(fileId))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.AddFileHandleIdError, taskId),
+                    string.Format(AppConfig.Instance.AddFileHandleIdError, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
                 return;
@@ -54,7 +51,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (fileInfo?.FilePath is null)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.AddFileHandleReceiveError, taskId),
+                    string.Format(AppConfig.Instance.AddFileHandleReceiveError, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
                 return;
@@ -78,19 +75,19 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
                 var networkFileDirectory = await UploadFileToNetworkPathAsync(botClient, update, replyButtons, taskId, tgFilePath, destinationFilename);
                 if (string.IsNullOrEmpty(networkFileDirectory))
                     return;
-                apiResponse = await api.AddNewFileToServiceTaskAsync(serviceTask, Path.Combine(networkFileDirectory, destinationFilename), 
+                apiResponse = await api.AddNewFileToServiceTaskAsync(serviceTask, Path.Combine(networkFileDirectory, destinationFilename),
                     destinationFilename);
             }
-            
+
             if (apiResponse.IsSuccess)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.AddFileHandleAddedMsg, serviceTask.Id, destinationFilename),
+                    string.Format(AppConfig.Instance.AddFileHandleAddedMsg, serviceTask.Id, destinationFilename),
                     parseMode: ParseMode.Html);
             }
             else
             {
-                SendNotification(botClient, update.Chat, string.Format(TextConsts.AddFileHandleCopyError,
+                SendNotification(botClient, update.Chat, string.Format(AppConfig.Instance.AddFileHandleCopyError,
                     serviceTask.Id), Serilog.Events.LogEventLevel.Error, apiResponse.Message);
             }
         }
@@ -102,7 +99,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (session.WorkFlowState != WorkFlow.ServiceRequestAddFile || string.IsNullOrEmpty(taskId))
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    TextConsts.CBCmdAddFileCallHandlerError,
+                    AppConfig.Instance.CBCmdAddFileCallHandlerError,
                     parseMode: ParseMode.Html);
                 return false;
             }
@@ -110,7 +107,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (!update.HasAttachment())
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.CBCmdAddFileCallHandlerFileError, taskId),
+                    string.Format(AppConfig.Instance.CBCmdAddFileCallHandlerFileError, taskId),
                     parseMode: ParseMode.Html,
                     replyMarkup: replyButtons);
                 return false;
@@ -165,19 +162,19 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var dir = Path.GetDirectoryName(destinationFilePath);
             if (!Directory.Exists(dir))
                 Directory.CreateDirectory(dir);
-            using (Stream fileStream = System.IO.File.Create(destinationFilePath))
+            using (Stream fileStream = File.Create(destinationFilePath))
             {
                 await botClient.DownloadFileAsync(filePath: filePath, destination: fileStream);
             }
             if (!System.IO.File.Exists(destinationFilePath))
             {
-                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.AddFileHandleReceiveError, taskId));
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(AppConfig.Instance.AddFileHandleReceiveError, taskId));
                 return false;
             }
             return true;
         }
 
-        private bool CopyFileToSharedNetworkDirectory(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons, 
+        private bool CopyFileToSharedNetworkDirectory(ITelegramBotClient botClient, TgUpdate update, IReplyMarkup replyButtons,
             string taskId, string localFilePath, string networkFileDirectory)
         {
             try
@@ -190,7 +187,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             catch (Exception ex)
             {
                 SendNotification(botClient, update.Chat, replyButtons,
-                    string.Format(TextConsts.AddFileHandleCopyError, taskId),
+                    string.Format(AppConfig.Instance.AddFileHandleCopyError, taskId),
                     Serilog.Events.LogEventLevel.Error, ex.Message);
                 return false;
             }

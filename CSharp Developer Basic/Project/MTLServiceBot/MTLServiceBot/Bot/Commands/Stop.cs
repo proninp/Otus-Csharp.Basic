@@ -15,7 +15,7 @@ namespace MTLServiceBot.Bot.Commands
         public override Task HandleAsync(ITelegramBotClient botClient, TgUpdate update, Session session)
         {
             _ = botClient.SendTextMessageAsync(update.Chat.Id,
-                string.Format(TextConsts.StopCommandMsg, session.User.Name),
+                string.Format(AppConfig.Instance.StopCommandMsg, session.User.Name),
                 replyMarkup: new ReplyKeyboardRemove());
             return Task.CompletedTask;
         }

@@ -7,12 +7,12 @@ namespace MTLServiceBot.Bot
     {
         private readonly Telegram.Bot.Types.User _tgUser;
         public Telegram.Bot.Types.User TgUser { get => _tgUser; }
-        public readonly ITelegramBotClient Client;
+        public readonly ITelegramBotClient _client;
         
         public TgBotClient()
         {
-            Client = new TelegramBotClient(ConfigRepository.GetBotToken());
-            _tgUser = Client.GetMeAsync().Result;
+            _client = new TelegramBotClient(ConfigRepository.GetBotToken());
+            _tgUser = _client.GetMeAsync().Result;
         }
     }
 }

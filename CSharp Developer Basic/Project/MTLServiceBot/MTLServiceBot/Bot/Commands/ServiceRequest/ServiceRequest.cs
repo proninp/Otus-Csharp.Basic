@@ -1,6 +1,5 @@
 ﻿using MTLServiceBot.API;
 using MTLServiceBot.API.Entities;
-using MTLServiceBot.Assistants;
 using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Text.Json;
@@ -37,7 +36,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
 
             var replyButtons = GetServiceTasksReplyButtons(serviceTasksList!);
 
-            if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(TextConsts.ServiceTasksCommandName)) // Если запрос полного списка задач
+            if (!string.IsNullOrEmpty(update.Text) && update.Text.Equals(AppConfig.Instance.ServiceTasksCommandName)) // Если запрос полного списка задач
             {
                 session.WorkFlowState = WorkFlow.ServiceRequests;
                 SendMenuButtons(botClient, update.Message, replyButtons);
@@ -69,25 +68,26 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             catch (Exception ex)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, Serilog.Events.LogEventLevel.Error, ex.ToString());
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), AppConfig.Instance.DeserializeJsonError, Serilog.Events.LogEventLevel.Error, ex.ToString());
                 return false;
             }
 
             if (serviceTasksList is null)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.DeserializeJsonError, Serilog.Events.LogEventLevel.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), AppConfig.Instance.DeserializeJsonError, Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             if (serviceTasksList.Count == 0)
             {
-                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), TextConsts.ServiceTasksListEmpty, Serilog.Events.LogEventLevel.Warning);
+                SendNotification(botClient, update.Chat, new ReplyKeyboardRemove(), 
+                    AppConfig.Instance.ServiceTasksListEmpty, Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             return true;
         }
 
         private void SendMenuButtons(ITelegramBotClient botClient, Message message, IReplyMarkup replyButtons) =>
-            botClient.SendTextMessageAsync(message.Chat, TextConsts.ChooseServiceRequestBtn, replyMarkup: replyButtons);
+            botClient.SendTextMessageAsync(message.Chat, AppConfig.Instance.ChooseServiceRequestBtn, replyMarkup: replyButtons);
 
         private void SendSingleTaskInfo(ITelegramBotClient botClient, Message message, List<ServiceTask> serviceTasksList, IReplyMarkup replyButtons)
         {
@@ -95,7 +95,7 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (!numberFormat.isValidNumberFormat)
             {
                 SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
-                    TextConsts.ServiceTasksWorkflowIncorrectFormat, Serilog.Events.LogEventLevel.Warning);
+                    AppConfig.Instance.ServiceTasksWorkflowIncorrectFormat, Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 
@@ -104,7 +104,10 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (!serviceTasksList.Any(st => st.RequestNo.Equals(requestNo) && st.TaskNo.Equals(taskNo)))
             {
                 SendNotification(botClient, message.Chat, GetServiceTasksReplyButtons(serviceTasksList),
-                    string.Format(TextConsts.ServiceTasksWorkflowNotFound, requestNo, taskNo, TextConsts.SingleTaskNumberFormatSeparator),
+                    string.Format(AppConfig.Instance.ServiceTasksWorkflowNotFound, 
+                    requestNo, 
+                    taskNo, 
+                    AppConfig.Instance.SingleTaskNumberFormatSeparator),
                     Serilog.Events.LogEventLevel.Warning);
                 return;
             }
@@ -122,10 +125,10 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
         private (bool isValidNumberFormat, List<string> numberParts) GetNumberRequestParts(string messageText)
         {
             var reqParts = new List<string>();
-            bool isValidPattern = messageText.Contains(TextConsts.SingleTaskNumberFormatSeparator);
+            bool isValidPattern = messageText.Contains(AppConfig.Instance.SingleTaskNumberFormatSeparator);
             if (isValidPattern)
             {
-                reqParts = messageText.Split(TextConsts.SingleTaskNumberFormatSeparator).ToList();
+                reqParts = messageText.Split(AppConfig.Instance.SingleTaskNumberFormatSeparator).ToList();
                 isValidPattern = reqParts.Count == 2;
             }
             return (isValidPattern, reqParts);

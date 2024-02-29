@@ -26,23 +26,23 @@ namespace MTLServiceBot.Bot
 
         public TgUpdateHandler()
         {
-            _login = new Login(TextConsts.LoginCommandName, TextConsts.LoginCommandDescription, false);
-            _logout = new Logout(TextConsts.LogoutCommandName, TextConsts.LogoutCommandDescription, true);
-            _serviceTasksRequest = new ServiceRequest(TextConsts.ServiceTasksCommandName, TextConsts.ServiceCommandDescription, true);
-            _otpgen = new Otpgen(TextConsts.OtpgenCommandName, TextConsts.OtpgenCommandDescription, true);
-            _unknownCommand = new Unknown(TextConsts.UnknownCommandName, TextConsts.UnknownCommandDescription, false);
+            _login = new Login(AppConfig.Instance.LoginCommandName, AppConfig.Instance.LoginCommandDescription, false);
+            _logout = new Logout(AppConfig.Instance.LogoutCommandName, AppConfig.Instance.LogoutCommandDescription, true);
+            _serviceTasksRequest = new ServiceRequest(AppConfig.Instance.ServiceTasksCommandName, AppConfig.Instance.ServiceCommandDescription, true);
+            _otpgen = new Otpgen(AppConfig.Instance.OtpgenCommandName, AppConfig.Instance.OtpgenCommandDescription, true);
+            _unknownCommand = new Unknown(AppConfig.Instance.UnknownCommandName, AppConfig.Instance.UnknownCommandDescription, false);
             _commands = new()
             {
-                new Start(TextConsts.StartCommandName, TextConsts.StartCommandDescription, false),
+                new Start(AppConfig.Instance.StartCommandName, AppConfig.Instance.StartCommandDescription, false),
                 _login,
                 _logout,
                 _serviceTasksRequest,
                 _otpgen,
-                new Stop(TextConsts.StopCommandName, TextConsts.StopCommandDescription, false)
+                new Stop(AppConfig.Instance.StopCommandName, AppConfig.Instance.StopCommandDescription, false)
             };
 
             var helpCommadInfo = _commands.Select(c => (c.Name, c.Description));
-            _commands.Add(new Help(TextConsts.HelpCommandName, TextConsts.HelpCommandDescription, false, helpCommadInfo));
+            _commands.Add(new Help(AppConfig.Instance.HelpCommandName, AppConfig.Instance.HelpCommandDescription, false, helpCommadInfo));
             _commands.Add(_unknownCommand);
             _workflows = new() 
             { 
@@ -64,9 +64,8 @@ namespace MTLServiceBot.Bot
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, TgUpdate update, CancellationToken cancellationToken)
         {
             var commandText = update.Message!.Text ?? "";
-            var logText = string.Format(TextConsts.UpdateNewReceivingLog, update.UpdateType.ToString(),
+            var logText = string.Format(AppConfig.Instance.UpdateNewReceivingLog, update.UpdateType.ToString(),
                 update.Chat!.Id, update.From!.Id, update.From.Username, commandText);
-            //AssistLog.ColoredPrint(logText, LogStatus.Warning);
             Log.Debug(logText);
 
             Session session = GetUserSession(update);
@@ -79,8 +78,7 @@ namespace MTLServiceBot.Bot
             }
             catch (Exception e)
             {
-                //AssistLog.ColoredPrint(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message), LogStatus.Error);
-                Log.Error(string.Format(TextConsts.UpdateCommandExceptionTemplate, commandText, e.Message));
+                Log.Error(string.Format(AppConfig.Instance.UpdateCommandExceptionTemplate, commandText, e.Message));
             }
         }
 
@@ -90,29 +88,28 @@ namespace MTLServiceBot.Bot
             var from = GetUserFromUpdate(update);
             if (update.Type is not (UpdateType.Message or UpdateType.CallbackQuery))
             {
-                ShowWarning(botClient, msg, string.Format(TextConsts.UpdateTypeUnknownLog, update.Type));
+                ShowWarning(botClient, msg, string.Format(AppConfig.Instance.UpdateTypeUnknownLog, update.Type));
                 return false;
             }
             if (msg is null || msg.Chat is null)
             {
-                ShowWarning(botClient, msg, string.Format(TextConsts.UpdateTypeDataUnknown, update.Id));
+                ShowWarning(botClient, msg, string.Format(AppConfig.Instance.UpdateTypeDataUnknown, update.Id));
                 return false;
             }
             if (from is null)
             {
-                ShowWarning(botClient, msg, string.Format(TextConsts.UpdateFromUnknown, update.Id));
+                ShowWarning(botClient, msg, string.Format(AppConfig.Instance.UpdateFromUnknown, update.Id));
                 return false;
             }
             if (update.Type is UpdateType.Message &&
                 msg.Type is not (MessageType.Text or MessageType.Photo or MessageType.Video or MessageType.Document))
             {
-                ShowWarning(botClient, msg, TextConsts.UpdateMessageTypeError);
+                ShowWarning(botClient, msg, AppConfig.Instance.UpdateMessageTypeError);
                 return false;
             }
             if (from.IsBot)
             {
-                var logMsg = string.Format(TextConsts.UpdateMessageFromBotError, msg.Chat.Id, from.Id, from.Username, msg.Text);
-                AssistLog.ColoredPrint(logMsg, LogStatus.Attention);
+                var logMsg = string.Format(AppConfig.Instance.UpdateMessageFromBotError, msg.Chat.Id, from.Id, from.Username, msg.Text);
                 Log.Warning(logMsg);
                 return false;
             }
@@ -160,7 +157,6 @@ namespace MTLServiceBot.Bot
 
         private void ShowWarning(ITelegramBotClient botClient, Message? msg, string warningText)
         {
-            //AssistLog.ColoredPrint(warningText, LogStatus.Error);
             Log.Error(warningText);
             if (msg is not null && msg.Chat is not null)
                 botClient.SendTextMessageAsync(msg.Chat, warningText, parseMode: ParseMode.Markdown, replyMarkup: new ReplyKeyboardRemove());

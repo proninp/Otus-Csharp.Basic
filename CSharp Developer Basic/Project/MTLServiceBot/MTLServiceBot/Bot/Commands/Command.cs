@@ -29,14 +29,14 @@ namespace MTLServiceBot.Bot.Commands
             if (!IsRequireAuthentication || session.IsAuthorized)
                 return true;
 
-            var unauthMessage = string.Format(TextConsts.AuthorizationRequired, Name);
+            var unauthMessage = string.Format(AppConfig.Instance.AuthorizationRequired, Name);
             _ = botClient.SendTextMessageAsync(messageData.Chat!, unauthMessage, null, ParseMode.Markdown);
             return false;
         }
 
         public virtual async Task HandleAsync(ITelegramBotClient botClient, TgUpdate messageData, Session session)
         {
-            await botClient.SendTextMessageAsync(messageData.Chat!, TextConsts.UnknownCommand, null, ParseMode.Markdown);
+            await botClient.SendTextMessageAsync(messageData.Chat!, AppConfig.Instance.UnknownCommandFullDescription, null, ParseMode.Markdown);
         }
 
         protected virtual void SendNotification(ITelegramBotClient botClient, Chat chat, IReplyMarkup? replyButtons,
@@ -56,12 +56,11 @@ namespace MTLServiceBot.Bot.Commands
         private void SendLogMessage(string tgMessage, Serilog.Events.LogEventLevel level = Serilog.Events.LogEventLevel.Debug, string logMessage = "")
         {
             var sb = new StringBuilder();
-            sb.AppendLine(string.Format(TextConsts.LogNotificationDescription, Name));
+            sb.AppendLine(string.Format(AppConfig.Instance.LogNotificationDescription, Name));
             sb.AppendLine(tgMessage);
             if (!string.IsNullOrEmpty(logMessage))
-                sb.AppendLine(string.Format(TextConsts.LogDescription, logMessage));
+                sb.AppendLine(string.Format(AppConfig.Instance.LogDescription, logMessage));
 
-            //AssistLog.ColoredPrint(sb.ToString(), logStatus);
             Log.Write(level, sb.ToString());
             
         }

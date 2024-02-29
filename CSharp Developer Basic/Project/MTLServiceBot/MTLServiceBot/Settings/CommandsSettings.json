@@ -1,0 +1,22 @@
+﻿{
+  "StartCommandName": "/start",
+  "StopCommandName": "/stop",
+  "LoginCommandName": "/login",
+  "LogoutCommandName": "/logout",
+  "ServiceTasksCommandName": "/servicetasks",
+  "OtpgenCommandName": "/otpgen",
+  "HelpCommandName": "/help",
+  "UnknownCommandName": "/unknown",
+
+  "StartCommandDescription": "Запускает использование бота",
+  "StopCommandDescription": "Завершает использования бота",
+  "LoginCommandDescription": "Инициирует процесс авторизации",
+  "LogoutCommandDescription": "Завершает сессию пользователя",
+  "ServiceCommandDescription": "Список сервисных запросов",
+  "OtpgenCommandDescription": "Получение пароля Integris",
+  "HelpCommandDescription": "Инструкции по использованию бота",
+  "UnknownCommandDescription": "Оповещает о неизвестной команде",
+  "UnknownCommandFullDescription": "Команда не распознана.\nДля получения списка команд введите ${HelpCommandName}",
+
+  "StopCommandMsg": "До свидания, {0}! Позднее, мы очистим историю взаимодействий с ботом."
+}

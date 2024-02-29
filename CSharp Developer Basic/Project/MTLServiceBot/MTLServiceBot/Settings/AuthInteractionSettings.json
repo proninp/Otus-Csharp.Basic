@@ -1,0 +1,13 @@
+﻿{
+  "EnterLogin": "${AvailableAuthAttemptsPhrase}\nВведите ваш логин",
+  "EnterPassword": "Введите пароль",
+  "LoginEmptyError": "Имя пользователя не может быть пустым!",
+  "PasswordEmptyError": "Пароль не может быть пустым!",
+  "LoginSuccessMsg": "Добро пожаловать, {0}! Вы успешно авторизованы!",
+  "LoginAlreadyAuthorized": "Вы уже авторизованы, как {0}",
+  "AvailableAuthAttemptsPhrase": "Доступных попыток для авторизации: <b>{0}</b>",
+  "LoginNoAuthorizedAttempts": "Вы израсходовали число допустимых попыток авторизации, обратитесь к администратору для сброса сессии",
+  "AuthorizationRequired": "Для выполнения команды {0} требуется авторизация",
+  "LogoutUnathorized": "Вы не авторизованы в системе, выполнение команды невозможно",
+  "LogoutSuccess": "{0}, ваша сессия успешно завершена"
+}

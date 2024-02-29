@@ -67,9 +67,9 @@ namespace MTLServiceBot.Assistants
         private static void CheckEncryptionData(string encryptionKey, string encryptionSalt)
         {
             if (string.IsNullOrEmpty(encryptionKey))
-                throw new ArgumentException(TextConsts.EncryptionKeyRequiredError, nameof(encryptionKey));
+                throw new ArgumentException(AppConfig.Instance.EncryptionKeyRequiredError, nameof(encryptionKey));
             if (string.IsNullOrEmpty(encryptionSalt))
-                throw new ArgumentException(TextConsts.EncryptionSaltRequiredError, nameof(encryptionSalt));
+                throw new ArgumentException(AppConfig.Instance.EncryptionSaltRequiredError, nameof(encryptionSalt));
         }
     }
 }

@@ -17,7 +17,7 @@ namespace MTLServiceBot.API.Entities
         private const string UserCommentTag = "userComment";
         private const string EpochTimeStampTag = "epochTimeStamp";
 
-        public string Id { get => $"{RequestNo}{TextConsts.SingleTaskNumberFormatSeparator}{TaskNo}"; }
+        public string Id { get => $"{RequestNo}{AppConfig.Instance.SingleTaskNumberFormatSeparator}{TaskNo}"; }
         public ServiceTaskStatus TaskStatus
         {
             get

@@ -18,14 +18,14 @@ namespace MTLServiceBot.Bot.Commands
             if (!session.IsAuthorized)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    TextConsts.LogoutUnathorized,
+                    AppConfig.Instance.LogoutUnathorized,
                     parseMode: ParseMode.Markdown);
             }
             else
             {
                 session.EndSession();
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.LogoutSuccess, session.User.Name),
+                    string.Format(AppConfig.Instance.LogoutSuccess, session.User.Name),
                     parseMode: ParseMode.Markdown,
                     replyMarkup: new ReplyKeyboardRemove());
             }

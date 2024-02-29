@@ -15,8 +15,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
     {
         private static readonly Dictionary<CallbackCommand, string> _callBackCommands = new()
         {
-            { CallbackCommand.ChangeStatus, TextConsts.CBCmdChangeStatus},
-            { CallbackCommand.AddFile, TextConsts.CBCmdAddFile}
+            { CallbackCommand.ChangeStatus, AppConfig.Instance.CBCmdChangeStatus},
+            { CallbackCommand.AddFile, AppConfig.Instance.CBCmdAddFile}
         };
 
         private InlineKeyboardMarkup? GetServiceTaskInlineButtons(ServiceTask? task)
@@ -27,9 +27,9 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var inlineKeyboard = new InlineKeyboardButton[]
             {
                 InlineKeyboardButton.WithCallbackData(task.GetNextStatusStepDescription(),
-                    $"{_callBackCommands[CallbackCommand.ChangeStatus]}{TextConsts.CBCmdDataSeparator}{task.Id}"),
-                InlineKeyboardButton.WithCallbackData(TextConsts.CBCmdAddFileDescription,
-                $"{_callBackCommands[CallbackCommand.AddFile]}{TextConsts.CBCmdDataSeparator}{task.Id}")
+                    $"{_callBackCommands[CallbackCommand.ChangeStatus]}{AppConfig.Instance.CBCmdDataSeparator}{task.Id}"),
+                InlineKeyboardButton.WithCallbackData(AppConfig.Instance.CBCmdAddFileDescription,
+                $"{_callBackCommands[CallbackCommand.AddFile]}{AppConfig.Instance.CBCmdDataSeparator}{task.Id}")
             };
             return new InlineKeyboardMarkup(inlineKeyboard);
         }
@@ -45,7 +45,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             if (serviceTask is null)
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
-                SendNotification(botClient, update.Chat, replyButtons, string.Format(TextConsts.CBCmdServiceTaskNotFound, cmdTaskId), Serilog.Events.LogEventLevel.Warning);
+                SendNotification(botClient, update.Chat, replyButtons, string.Format(AppConfig.Instance.CBCmdServiceTaskNotFound, cmdTaskId),
+                    Serilog.Events.LogEventLevel.Warning);
                 return;
             }
 
@@ -66,26 +67,23 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             var command = CallbackCommand.None;
             if (callback is null || string.IsNullOrEmpty(callback.Data))
             {
-                //AssistLog.ColoredPrint(TextConsts.CBCmdDataEmpty, LogStatus.Error);
-                Log.Warning(TextConsts.CBCmdDataEmpty);
+                Log.Warning(AppConfig.Instance.CBCmdDataEmpty);
                 return ("", command);
             }
 
             var data = callback.Data;
             var cbCmdPair = _callBackCommands.FirstOrDefault(cq => data.StartsWith(cq.Value));
-            if (!data.Contains(TextConsts.CBCmdDataSeparator) || cbCmdPair.Equals(default(KeyValuePair<CallbackCommand, string>)))
+            if (!data.Contains(AppConfig.Instance.CBCmdDataSeparator) || cbCmdPair.Equals(default(KeyValuePair<CallbackCommand, string>)))
             {
-                //AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataNotRecognized, data), LogStatus.Error); // TODO Logging
-                Log.Warning(string.Format(TextConsts.CBCmdDataNotRecognized, data));
+                Log.Warning(string.Format(AppConfig.Instance.CBCmdDataNotRecognized, data));
                 return ("", command);
             }
 
             command = cbCmdPair.Key;
-            var dataList = data.Split(TextConsts.CBCmdDataSeparator);
+            var dataList = data.Split(AppConfig.Instance.CBCmdDataSeparator);
             if (dataList.Length != 2)
             {
-                //AssistLog.ColoredPrint(string.Format(TextConsts.CBCmdDataUndefined, callback.Data), LogStatus.Error); // TODO Logging
-                Log.Warning(string.Format(TextConsts.CBCmdDataUndefined, callback.Data));
+                Log.Warning(string.Format(AppConfig.Instance.CBCmdDataUndefined, callback.Data));
                 return ("", command);
             }
             return (dataList[1], command);
@@ -114,7 +112,8 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             {
                 _ = botClient.EditMessageReplyMarkupAsync(update.Chat.Id, update.Message.MessageId, replyMarkup: null);
                 SendNotification(botClient, update.Chat,
-                    string.Format(TextConsts.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo), Serilog.Events.LogEventLevel.Warning);
+                    string.Format(AppConfig.Instance.SingleServiceRequestUpdateFailureMsg, task.RequestNo, task.TaskNo),
+                    Serilog.Events.LogEventLevel.Warning);
                 return false;
             }
             // Выводим обновленную информацию в то же сообщение, обновляем кнопки
@@ -127,9 +126,9 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
         private async Task<ServiceTask?> UpdateSingleServiceTaskInfoAsync(Session session, string taskId)
         {
             ServiceTask? serviceTask = null;
-            if (string.IsNullOrEmpty(taskId) || !taskId.Contains(TextConsts.SingleTaskNumberFormatSeparator))
+            if (string.IsNullOrEmpty(taskId) || !taskId.Contains(AppConfig.Instance.SingleTaskNumberFormatSeparator))
                 return serviceTask;
-            var taskIdParts = taskId.Split(TextConsts.SingleTaskNumberFormatSeparator);
+            var taskIdParts = taskId.Split(AppConfig.Instance.SingleTaskNumberFormatSeparator);
             if (taskIdParts.Length != 2)
                 return serviceTask;
             var api = new ServiceAPI(session);
@@ -143,7 +142,6 @@ namespace MTLServiceBot.Bot.Commands.ServiceRequest
             }
             catch (Exception ex)
             {
-                //AssistLog.ColoredPrint(ex.ToString(), LogStatus.Error); // TODO Logging
                 Log.Error(ex.ToString());
             }
             return serviceTask;

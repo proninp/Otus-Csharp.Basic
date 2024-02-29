@@ -1,6 +1,4 @@
 ﻿using MTLServiceBot.API;
-using MTLServiceBot.Assistants;
-using MTLServiceBot.SQL;
 using MTLServiceBot.Users;
 using System.Text;
 using Telegram.Bot;
@@ -23,7 +21,7 @@ namespace MTLServiceBot.Bot.Commands
             if (session.IsAuthorized)
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.LoginAlreadyAuthorized, session.User.Login),
+                    string.Format(AppConfig.Instance.LoginAlreadyAuthorized, session.User.Login),
                     parseMode: ParseMode.Html,
                     replyMarkup: new ReplyKeyboardRemove());
                 return;
@@ -32,7 +30,7 @@ namespace MTLServiceBot.Bot.Commands
             if (!session.CheckAvailableAuthorizationAttempts())
             {
                 _ = botClient.SendTextMessageAsync(update.Chat,
-                    string.Format(TextConsts.LoginNoAuthorizedAttempts, session.User.Login),
+                    string.Format(AppConfig.Instance.LoginNoAuthorizedAttempts, session.User.Login),
                     parseMode: ParseMode.Html);
                 return;
             }
@@ -57,7 +55,7 @@ namespace MTLServiceBot.Bot.Commands
         {
             session.AuthStep = AuthStep.Username;
             _ = botClient.SendTextMessageAsync(message.Chat, 
-                string.Format(TextConsts.EnterLogin, session.AvailableAuthorizationAttemts), 
+                string.Format(AppConfig.Instance.EnterLogin, session.AvailableAuthorizationAttemts), 
                 parseMode: ParseMode.Html);
         }
 
@@ -66,12 +64,12 @@ namespace MTLServiceBot.Bot.Commands
             if (string.IsNullOrEmpty(message.Text))
             {
                 session.AuthStep = AuthStep.None;
-                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.LoginEmptyError);
+                _ = botClient.SendTextMessageAsync(message.Chat, AppConfig.Instance.LoginEmptyError);
                 return;
             }
             session.User.Login = message.Text;
             session.AuthStep = AuthStep.Password;
-            _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.EnterPassword);
+            _ = botClient.SendTextMessageAsync(message.Chat, AppConfig.Instance.EnterPassword);
         }
 
         private async Task HandleUserPasswordInput(ITelegramBotClient botClient, Message message, Session session)
@@ -80,7 +78,7 @@ namespace MTLServiceBot.Bot.Commands
             var password = message.Text;
             if (string.IsNullOrEmpty(password))
             {
-                _ = botClient.SendTextMessageAsync(message.Chat, TextConsts.PasswordEmptyError);
+                _ = botClient.SendTextMessageAsync(message.Chat, AppConfig.Instance.PasswordEmptyError);
                 return;
             }
             
@@ -96,7 +94,7 @@ namespace MTLServiceBot.Bot.Commands
             else
             {
                 session.DecreaseAvailableSessions();
-                authMessage.AppendLine(string.Format(TextConsts.AvailableAuthAttemptsPhrase, session.AvailableAuthorizationAttemts));
+                authMessage.AppendLine(string.Format(AppConfig.Instance.AvailableAuthAttemptsPhrase, session.AvailableAuthorizationAttemts));
             }
             _ = botClient.SendTextMessageAsync(message.Chat, authMessage.ToString(), parseMode: ParseMode.Html);
         }

@@ -1,0 +1,14 @@
+﻿{
+	"AuthApiUrl": "{0}/GetST",
+	"ServiceTasksApiUrl": "{0}/ServiceEngineerRequests",
+	"ServiceTaskApiUrl": "/ServiceEngineerRequestsAll?$filter=Request_No eq '{0}' and Task_No eq '{1}'",
+	"SetTaskStatusApiUrl": "{0}/SetStatus",
+	"AddFileApiUrl": "{0}/AddServiceFile",
+	"AddNetworkFileApiUrl": "{0}/AddTelegramFile",
+	"GetTaskFilesListUrl": "{0}/ServiceFilesList",
+	"AddCommentApiUrl": "{0}/AddRequestTaskComment",
+	"OtpgenApiUrl": "{0}/ChallengeOtp",
+	"AcceptHeaderName": "Accept",
+	"AcceptHeaderValue": "application/json",
+	"AuthHeaderName": "Authorization"
+}

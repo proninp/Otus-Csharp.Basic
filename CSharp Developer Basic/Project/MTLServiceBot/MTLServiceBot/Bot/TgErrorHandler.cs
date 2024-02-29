@@ -4,7 +4,7 @@ using Telegram.Bot;
 
 namespace MTLServiceBot.Bot
 {
-    public class TelegramErrorHandler
+    public class TgErrorHandler
     {
         public Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
