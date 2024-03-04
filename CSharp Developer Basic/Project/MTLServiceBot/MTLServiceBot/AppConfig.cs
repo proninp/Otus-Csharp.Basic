@@ -194,11 +194,9 @@ public class AppConfig
         OtpgenCommandDescription = configuration["OtpgenCommandDescription"] ?? "";
         HelpCommandDescription = configuration["HelpCommandDescription"] ?? "";
         UnknownCommandDescription = configuration["UnknownCommandDescription"] ?? "";
-        UnknownCommandFullDescription = configuration["UnknownCommandFullDescription"] ?? "";
+        UnknownCommandFullDescription = string.Format(configuration["UnknownCommandFullDescription"] ?? "", HelpCommandName);
         StopCommandMsg = configuration["StopCommandMsg"] ?? "";
 
-        EnterLogin = configuration["EnterLogin"] ?? "";
-        EnterPassword = configuration["EnterPassword"] ?? "";
         LoginEmptyError = configuration["LoginEmptyError"] ?? "";
         PasswordEmptyError = configuration["PasswordEmptyError"] ?? "";
         LoginSuccessMsg = configuration["LoginSuccessMsg"] ?? "";
@@ -208,6 +206,8 @@ public class AppConfig
         AuthorizationRequired = configuration["AuthorizationRequired"] ?? "";
         LogoutUnathorized = configuration["LogoutUnathorized"] ?? "";
         LogoutSuccess = configuration["LogoutSuccess"] ?? "";
+        EnterLogin = string.Format(configuration["EnterLogin"] ?? "", AvailableAuthAttemptsPhrase);
+        EnterPassword = configuration["EnterPassword"] ?? "";
 
         UpdateFailed = configuration["UpdateFailed"] ?? "";
         UpdateTypeUnknownLog = configuration["UpdateTypeUnknownLog"] ?? "";
@@ -225,13 +225,22 @@ public class AppConfig
         ServiceTasksListEmpty = configuration["ServiceTasksListEmpty"] ?? "";
         ChooseServiceRequestBtn = configuration["ChooseServiceRequestBtn"] ?? "";
         SingleServiceRequestUpdateFailureMsg = configuration["SingleServiceRequestUpdateFailureMsg"] ?? "";
-        ServiceTasksWorkflowIncorrectFormat = configuration["ServiceTasksWorkflowIncorrectFormat"] ?? "";
-        ServiceTasksWorkflowNotFound = configuration["ServiceTasksWorkflowNotFound"] ?? "";
+        ServiceTasksWorkflowIncorrectFormat = string.Format(configuration["ServiceTasksWorkflowIncorrectFormat"] ?? "",
+            configuration["STWFIncorrectFormatEx1"],
+            configuration["STWFIncorrectFormatEx2"],
+            string.Format(configuration["STWFIncorrectFormatEx3"] ?? "", SingleTaskNumberFormatSeparator),
+            configuration["STWFIncorrectFormatEx4"]);
+        ServiceTasksWorkflowNotFound = string.Format(configuration["ServiceTasksWorkflowNotFound"] ?? "",
+            configuration["ServiceTasksWorkflowNotFoundEx1"],
+            configuration["ServiceTasksWorkflowNotFoundEx2"],
+            configuration["ServiceTasksWorkflowNotFoundEx3"]);
 
         CBCmdAddFileDescription = configuration["CBCmdAddFileDescription"] ?? "";
         CBCmdAddFileCallMsgDescription = configuration["CBCmdAddFileCallMsgDescription"] ?? "";
         CBCmdAddFileCallHandlerError = configuration["CBCmdAddFileCallHandlerError"] ?? "";
-        CBCmdAddFileCallHandlerFileError = configuration["CBCmdAddFileCallHandlerFileError"] ?? "";
+        CBCmdAddFileCallHandlerFileError = string.Format(configuration["CBCmdAddFileCallHandlerFileError"] ?? "",
+            configuration["CBCmdAddFileCallHandlerFileErrorEx1"],
+            configuration["CBCmdAddFileCallHandlerFileErrorEx2"]);
         AddFileHandleIdError = configuration["AddFileHandleIdError"] ?? "";
         AddFileHandleReceiveError = configuration["AddFileHandleReceiveError"] ?? "";
         AddFileHandleCopyError = configuration["AddFileHandleCopyError"] ?? "";
@@ -240,7 +249,9 @@ public class AppConfig
         CBCmdDataEmpty = configuration["CBCmdDataEmpty"] ?? "";
         CBCmdDataUndefined = configuration["CBCmdDataUndefined"] ?? "";
         CBCmdDataNotRecognized = configuration["CBCmdDataNotRecognized"] ?? "";
-        CBCmdServiceTaskNotFound = configuration["CBCmdServiceTaskNotFound"] ?? "";
+        CBCmdServiceTaskNotFound = string.Format(configuration["CBCmdServiceTaskNotFound"] ?? "",
+            configuration["CBCmdServiceTaskNotFoundEx1"],
+            string.Format(configuration["CBCmdServiceTaskNotFoundEx2"] ?? "", ServiceTasksCommandName));
 
         LogNotificationDescription = configuration["LogNotificationDescription"] ?? "";
         LogDescription = configuration["LogDescription"] ?? "";
